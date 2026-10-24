@@ -900,6 +900,17 @@
               showError('loginError', (hasil && hasil.message) || 'Token tidak cocok.');
               return;
             }
+
+            // Jika token khusus untuk fullscreen saja
+            if (hasil.fullscreenOnly) {
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function() {});
+              }
+              $('token').value = '';
+              tampilkanCatatan('Mode layar penuh diaktifkan.');
+              return;
+            }
+
             state.token = token;
             bukaBilik(hasil);
           })
