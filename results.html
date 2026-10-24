@@ -2118,13 +2118,13 @@
         });
       });
 
-      google.script.run
-        .withSuccessHandler(function (daftar) {
+      fetch(SCRIPT_URL + '?action=getPaslon')
+        .then(function (res) { return res.json(); })
+        .then(function (daftar) {
           daftarPaslon = daftar || [];
           terapkanPaslon();
         })
-        .withFailureHandler(function () {})
-        .getPaslon();
+        .catch(function () {});
 
       (function mulai() {
         var tersimpan = bacaToken();
