@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rekap Suara OSIM</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ink: #10233a;
+      --ink-soft: #516173;
+      --line: #dce3e9;
+      --paper: #f1f4f6;
+      --accent: #0e6b5b;
+      --accent-dark: #0a5446;
+      --accent-soft: #eaf4f1;
+      --muted: #8a93a5;
+      --p1: #103f8a;
+      --p2: #0e7c66;
+      --p3: #c2410c;
+      --abstain: #8a93a5;
+    }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 64px;
+    }
+
+    .school {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .school-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 2px 0 0;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    .dot.is-error {
+      background: #b42318;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 1; }
+    }
+
+    .page {
+      padding-top: 26px;
+      padding-bottom: 48px;
+    }
+
+    .page-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 6px;
+      line-height: 1.2;
+    }
+
+    .page-sub {
+      font-size: 17px;
+      color: var(--ink-soft);
+      margin: 0;
+      max-width: 72ch;
+    }
+
+    /* ---------- Login admin ---------- */
+
+    .auth {
+      max-width: 420px;
+      margin: 34px auto 0;
+    }
+
+    .auth-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px;
+    }
+
+    .auth-title {
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+    }
+
+    .auth-sub {
+      font-size: 16px;
+      color: var(--ink-soft);
+      margin: 0 0 20px;
+    }
+
+    .hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 16px 0 0;
+      line-height: 1.5;
+    }
+
+    .form-label {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      border-color: var(--line);
+      padding: 10px 12px;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 107, 91, 0.15);
+    }
+
+    .btn-primary {
+      --bs-btn-bg: var(--accent);
+      --bs-btn-border-color: var(--accent);
+      --bs-btn-hover-bg: var(--accent-dark);
+      --bs-btn-hover-border-color: var(--accent-dark);
+      --bs-btn-active-bg: var(--accent-dark);
+      --bs-btn-active-border-color: var(--accent-dark);
+      --bs-btn-disabled-bg: var(--accent);
+      --bs-btn-disabled-border-color: var(--accent);
+      --bs-btn-focus-shadow-rgb: 14, 107, 91;
+      font-weight: 600;
+    }
+
+    .alert {
+      font-size: 13px;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    /* ---------- Statistik & chart ---------- */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .stat-label {
+      font-size: 15px;
+      color: var(--ink-soft);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 46px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+
+    .stat-note {
+      font-size: 15px;
+      color: var(--muted);
+      margin: 6px 0 0;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: start;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+
+    .panel-sub {
+      font-size: 15px;
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 360px;
+    }
+
+    .chart-box.is-tall {
+      height: 420px;
+    }
+
+    .legenda {
+      list-style: none;
+      margin: 18px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .legenda-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .legenda-foto {
+      width: 64px;
+      height: 85px;
+    }
+
+    .legenda-nama {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .legenda-judul {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.2;
+    }
+
+    .legenda-calon {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .legenda-note {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .legenda-angka {
+      font-size: 24px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .legenda-chip {
+      width: 64px;
+      height: 85px;
+      flex: none;
+      display: grid;
+      place-items: center;
+    }
+
+    .legenda-chip::before {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: var(--abstain);
+    }
+
+    .foto-frame {
+      position: relative;
+      flex: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef2f5;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .foto-frame img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .foto-frame.is-berfoto img {
+      display: block;
+    }
+
+    .foto-frame.is-berfoto .foto-cadangan {
+      display: none;
+    }
+
+    .foto-cadangan {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .empty {
+      font-size: 16px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .foot {
+      font-size: 15px;
+      color: var(--muted);
+      margin: 16px 0 0;
+      text-align: center;
+    }
+
+    .legenda-catatan {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+
+    /* ---------- Pengumuman hasil final ---------- */
+
+    .btn-reveal {
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .reveal {
+      position: fixed;
+      inset: 0;
+      z-index: 1080;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      overflow-y: auto;
+      color: #fff;
+      background: radial-gradient(120% 90% at 50% 0%, #17395a 0%, #0b1c2c 55%, #06101a 100%);
+    }
+
+    .reveal-inner {
+      width: 100%;
+      max-width: 1120px;
+      text-align: center;
+    }
+
+    .reveal-kicker {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8fb2c9;
+      margin: 0 0 26px;
+    }
+
+    .reveal-stage {
+      display: grid;
+      place-items: center;
+      min-height: 460px;
+    }
+
+    .reveal-view {
+      width: 100%;
+    }
+
+    .reveal-stage-label {
+      font-size: 21px;
+      font-weight: 600;
+      color: #cddae4;
+      margin: 0 0 6px;
+    }
+
+    .reveal-count {
+      font-size: clamp(120px, 30vw, 260px);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      margin: 0;
+    }
+
+    .reveal-count.is-pop {
+      animation: countPop 0.55s ease-out;
+    }
+
+    @keyframes countPop {
+      from { transform: scale(0.82); opacity: 0.25; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .reveal-hint {
+      font-size: 19px;
+      color: #8fb2c9;
+      margin: 22px 0 0;
+    }
+
+    .reveal-foto {
+      width: 156px;
+      height: 208px;
+      margin: 0 auto 20px;
+      border-color: rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+    }
+
+    .reveal-foto .foto-cadangan {
+      font-size: 32px;
+      color: #cfe0ec;
+    }
+
+    .reveal-nama {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .reveal-persen {
+      font-size: clamp(84px, 18vw, 190px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      font-variant-numeric: tabular-nums;
+      margin: 10px 0;
+    }
+
+    .reveal-satuan {
+      font-size: 0.4em;
+      font-weight: 600;
+      color: #a9c1d3;
+      margin-left: 4px;
+    }
+
+    .reveal-suara {
+      font-size: 22px;
+      color: #a9c1d3;
+      margin: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .reveal-bar {
+      width: min(620px, 94%);
+      height: 32px;
+      margin: 26px auto 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      overflow: hidden;
+    }
+
+    .reveal-bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #2f9e82, #5fd8b4);
+      border-radius: inherit;
+      transition: width 0.15s linear;
+    }
+
+    .reveal-final-title {
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .reveal-final-sub {
+      font-size: 18px;
+      color: #8fb2c9;
+      margin: 0;
+    }
+
+    .hasil {
+      display: grid;
+      gap: 14px;
+      margin: 30px 0 0;
+      text-align: left;
+    }
+
+    .hasil-baris {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) auto;
+      grid-template-areas: 'foto nama persen' 'foto suara persen' 'bar bar bar';
+      align-items: center;
+      column-gap: 18px;
+      row-gap: 8px;
+      padding: 16px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .hasil-foto {
+      grid-area: foto;
+      width: 84px;
+      height: 112px;
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+    }
+
+    .hasil-foto .foto-cadangan {
+      font-size: 26px;
+      color: #cfe0ec;
+    }
+
+    .hasil-nama {
+      grid-area: nama;
+      font-size: 22px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .hasil-suara {
+      grid-area: suara;
+      font-size: 16px;
+      color: #a9c1d3;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hasil-persen {
+      grid-area: persen;
+      font-size: 48px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+    }
+
+    .hasil-bar {
+      grid-area: bar;
+      display: block;
+      height: 26px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .hasil-bar > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #2f9e82, #5fd8b4);
+      border-radius: inherit;
+      transition: width 0.6s ease;
+    }
+
+    .ringkas-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 30px 0 0;
+    }
+
+    .ringkas-item {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 24px 18px;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .ringkas-label {
+      font-size: clamp(15px, 1.8vw, 21px);
+      color: #cddae4;
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+
+    .ringkas-value {
+      display: block;
+      font-size: clamp(36px, 4.6vw, 64px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      margin: 6px 0 0;
+      overflow-wrap: anywhere;
+    }
+
+    .ringkas-note {
+      display: block;
+      font-size: 15px;
+      color: #8fb2c9;
+      margin: 10px 0 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ringkas-item.is-key .ringkas-value {
+      color: #5fd8b4;
+    }
+
+    .reveal-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .reveal-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reveal-step {
+      font-size: 15px;
+      letter-spacing: 0.04em;
+      color: #8fb2c9;
+    }
+
+    .reveal-jeda {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: rgba(215, 184, 119, 0.16);
+      color: #d7b877;
+    }
+
+    .reveal.is-jeda .reveal-stage {
+      opacity: 0.55;
+      transition: opacity 0.2s ease;
+    }
+
+    .reveal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .reveal-actions .btn-ruang {
+      margin-left: 10px;
+    }
+
+    .reveal-fs-hint {
+      font-size: 14px;
+      color: #d7b877;
+      margin: 14px 0 0;
+    }
+
+    .reveal:fullscreen {
+      width: 100%;
+      height: 100%;
+      padding: 32px 24px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal-count.is-pop { animation: none; }
+    }
+
+    @media (min-width: 768px) {
+      .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .stat-value { font-size: 54px; }
+    }
+
+    @media (min-width: 992px) {
+      .charts { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+    }
+
+    @media (max-width: 640px) {
+      .hasil-baris {
+        grid-template-columns: 72px minmax(0, 1fr) auto;
+        column-gap: 12px;
+        padding: 14px;
+      }
+      .hasil-foto { width: 72px; height: 96px; }
+      .hasil-nama { font-size: 17px; }
+      .hasil-persen { font-size: 34px; }
+      .hasil-suara { font-size: 14px; }
+      .ringkas-strip { grid-template-columns: minmax(0, 1fr); }
+      .reveal-foto { width: 120px; height: 160px; }
+      .reveal-bar { height: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div>
+        <p class="school">MTsN 1 Kota Sungai Penuh</p>
+        <p class="school-sub">Dashboard rekap pemilihan OSIM</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="live d-none" id="liveWrap">
+          <span class="dot" id="liveDot" aria-hidden="true"></span>
+          <span id="updatedAt">Memuat data</span>
+        </span>
+        <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="logoutBtn">Keluar</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap page">
+    <!-- Login admin: data tidak dimuat sebelum sesi sah -->
+    <section class="auth" id="loginPanel" aria-labelledby="authTitle">
+      <div class="auth-card">
+        <h1 class="auth-title" id="authTitle">Dashboard panitia</h1>
+        <p class="auth-sub">Masukkan password admin untuk melihat rekap suara.</p>
+
+        <form id="loginForm" novalidate>
+          <label for="sandi" class="form-label">Password admin</label>
+          <input type="password" class="form-control" id="sandi" autocomplete="current-password" required>
+
+          <div class="alert alert-danger d-none mt-3" id="loginError" role="alert" aria-live="assertive"></div>
+
+          <button type="submit" class="btn btn-primary w-100 mt-3" id="loginBtn">Masuk</button>
+        </form>
+
+        <p class="hint">Password diatur lewat editor Apps Script. Hubungi pembuat aplikasi bila belum pernah diatur.</p>
+      </div>
+    </section>
+
+    <!-- Dashboard, hanya ditampilkan setelah login berhasil -->
+    <div id="dashboard" class="d-none">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Rekapitulasi suara</h1>
+          <p class="page-sub">Pemilihan Ketua dan Wakil Ketua OSIM. Angka diperbarui otomatis setiap 5 detik.</p>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary" id="pdfBtn">Unduh Rekap PDF</button>
+          <button type="button" class="btn btn-primary btn-reveal" id="revealBtn" disabled>
+            Mulai pengumuman hasil
+          </button>
+        </div>
+      </div>
+
+      <section class="stats" aria-label="Statistik pemilihan">
+        <div class="stat">
+          <span class="stat-label">Total DPT</span>
+          <span class="stat-value" id="statTotal">&ndash;</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Suara masuk</span>
+          <span class="stat-value" id="statMasuk">&ndash;</span>
+          <p class="stat-note" id="statMasukNote">&nbsp;</p>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Belum memilih</span>
+          <span class="stat-value" id="statBelum">&ndash;</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Partisipasi</span>
+          <span class="stat-value" id="statPersen">&ndash;</span>
+        </div>
+      </section>
+
+      <div class="charts">
+        <section class="panel" aria-labelledby="chartPieTitle">
+          <h2 class="panel-title" id="chartPieTitle">Porsi perolehan suara</h2>
+          <p class="panel-sub" id="pieTotal">Belum ada suara</p>
+          <div class="chart-box" id="pieBox">
+            <canvas id="pieChart" role="img" aria-label="Diagram lingkaran perolehan suara paslon dan pemilih yang tidak memilih"></canvas>
+          </div>
+          <p class="empty d-none" id="pieEmpty">Belum ada suara masuk.</p>
+
+          <ul class="legenda" id="legenda">
+            <li class="legenda-item">
+              <span class="legenda-foto foto-frame" data-paslon="Paslon 1">
+                <img alt="Foto Paslon 1">
+                <span class="foto-cadangan" aria-hidden="true">1</span>
+              </span>
+              <span class="legenda-nama">
+                <span class="legenda-judul">Paslon 1</span>
+                <span class="legenda-calon" data-nama="Paslon 1">Nama Paslon 1</span>
+              </span>
+              <span class="legenda-angka" data-angka="Paslon 1">0 (0,0%)</span>
+            </li>
+            <li class="legenda-item">
+              <span class="legenda-foto foto-frame" data-paslon="Paslon 2">
+                <img alt="Foto Paslon 2">
+                <span class="foto-cadangan" aria-hidden="true">2</span>
+              </span>
+              <span class="legenda-nama">
+                <span class="legenda-judul">Paslon 2</span>
+                <span class="legenda-calon" data-nama="Paslon 2">Nama Paslon 2</span>
+              </span>
+              <span class="legenda-angka" data-angka="Paslon 2">0 (0,0%)</span>
+            </li>
+            <li class="legenda-item">
+              <span class="legenda-foto foto-frame" data-paslon="Paslon 3">
+                <img alt="Foto Paslon 3">
+                <span class="foto-cadangan" aria-hidden="true">3</span>
+              </span>
+              <span class="legenda-nama">
+                <span class="legenda-judul">Paslon 3</span>
+                <span class="legenda-calon" data-nama="Paslon 3">Nama Paslon 3</span>
+              </span>
+              <span class="legenda-angka" data-angka="Paslon 3">0 (0,0%)</span>
+            </li>
+            <li class="legenda-item">
+              <span class="legenda-chip" aria-hidden="true"></span>
+              <span class="legenda-nama">
+                <span class="legenda-calon">Tidak memilih</span>
+                <span class="legenda-note">Belum memakai token</span>
+              </span>
+              <span class="legenda-angka" data-angka="Tidak memilih">0 (0,0%)</span>
+            </li>
+          </ul>
+
+          <p class="legenda-catatan">Persen paslon dihitung dari suara sah. Persen "Tidak memilih" dihitung dari total DPT.</p>
+        </section>
+
+        <section class="panel" aria-labelledby="chartBarTitle">
+          <h2 class="panel-title" id="chartBarTitle">Jumlah suara per pilihan</h2>
+          <p class="panel-sub">Paslon 1, Paslon 2, Paslon 3, dan tidak memilih</p>
+          <div class="chart-box is-tall">
+            <canvas id="barChart" role="img" aria-label="Diagram batang jumlah suara per paslon dan pemilih yang tidak memilih"></canvas>
+          </div>
+        </section>
+      </div>
+
+      <p class="foot">Sumber: sheet KotakSuara dan DPT. Halaman ini untuk panitia.</p>
+    </div>
+  </main>
+
+  <!-- Pengumuman hasil final: hitung mundur lalu persentase tiap paslon -->
+  <div class="reveal d-none" id="reveal" role="dialog" aria-modal="true"
+       aria-label="Pengumuman hasil pemilihan" aria-hidden="true">
+    <div class="reveal-inner">
+      <p class="reveal-kicker">Hasil akhir pemilihan OSIM</p>
+
+      <div class="reveal-stage">
+        <!-- Tahap 1: hitung mundur -->
+        <div class="reveal-view" id="revealCountView">
+          <p class="reveal-stage-label" id="revealCountLabel">Paslon 1</p>
+          <p class="reveal-count" id="revealCount">10</p>
+          <p class="reveal-hint">Bersiap...</p>
+        </div>
+
+        <!-- Tahap 2: persentase bergerak -->
+        <div class="reveal-view d-none" id="revealScoreView">
+          <span class="reveal-foto foto-frame" id="revealFoto">
+            <img alt="">
+            <span class="foto-cadangan" aria-hidden="true">1</span>
+          </span>
+          <p class="reveal-nama" id="revealNama">Paslon 1</p>
+          <p class="reveal-persen"><span id="revealPersen">0,0</span><span class="reveal-satuan">%</span></p>
+          <p class="reveal-suara" id="revealSuara">0 suara sah</p>
+          <div class="reveal-bar" aria-hidden="true"><span class="reveal-bar-fill" id="revealBarFill"></span></div>
+        </div>
+
+        <!-- Tahap 3: ringkasan -->
+        <div class="reveal-view d-none" id="revealFinalView">
+          <h2 class="reveal-final-title" id="revealTitle">Hasil akhir pemilihan</h2>
+          <p class="reveal-final-sub">Persentase dari suara sah</p>
+          <div class="hasil" id="revealHasil"></div>
+          <div class="ringkas-strip" id="revealRingkas"></div>
+        </div>
+      </div>
+
+      <div class="reveal-foot">
+        <span class="reveal-status">
+          <span class="reveal-step" id="revealStep">Paslon 1 dari 3</span>
+          <span class="reveal-jeda d-none" id="revealJedaBadge">Dijeda</span>
+        </span>
+        <div class="reveal-actions">
+          <button type="button" class="btn btn-light" id="revealPause" aria-pressed="false">Jeda</button>
+          <button type="button" class="btn btn-outline-light" id="revealReplay">Ulangi</button>
+          <button type="button" class="btn btn-outline-light" id="revealPrev" aria-label="Paslon sebelumnya">Sebelumnya</button>
+          <button type="button" class="btn btn-outline-light" id="revealNext" aria-label="Paslon berikutnya">Berikutnya</button>
+          <button type="button" class="btn btn-outline-light btn-ruang" id="revealFs" aria-pressed="false">Layar penuh</button>
+          <button type="button" class="btn btn-outline-light" id="revealSound" aria-pressed="true">Suara: aktif</button>
+          <button type="button" class="btn btn-outline-light" id="revealSkip">Lewati</button>
+          <button type="button" class="btn btn-outline-light" id="revealClose">Tutup</button>
+        </div>
+      </div>
+
+      <p class="reveal-fs-hint d-none" id="revealFsHint">
+        Layar penuh tidak bisa diaktifkan otomatis oleh browser ini. Tekan F11 (Windows) atau Ctrl+Cmd+F (Mac).
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwaWO92DXk-Q8Q_D0ECMeCJ8VhlMjYycEFvpR-VIXBbISn02spQYliVxKKifL2JxY57/exec'; // Ganti dengan URL Web App Anda
+      var REFRESH_MS = 5000;
+      var TOKEN_KEY = 'osim-admin-token';
+      var REFRESH_MS = 5000;
+      var TOKEN_KEY = 'osim-admin-token';
+
+      var WARNA = ['#103f8a', '#0e7c66', '#c2410c', '#8a93a5'];
+      var LABEL = ['Paslon 1', 'Paslon 2', 'Paslon 3', 'Tidak memilih'];
+      var GARIS = '#e8edf1';
+      var TEKS = '#516173';
+
+      var state = { token: '', memuat: false, timer: null, masuk: false, loginBusy: false, statsTerakhir: null, suaraAktif: true };
+      var pieChart = null;
+      var barChart = null;
+      var daftarPaslon = [];
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+
+      function angka(nilai) {
+        return Number(nilai || 0).toLocaleString('id-ID');
+      }
+
+      function persen(nilai, total) {
+        if (!total) return 0;
+        return Math.round((nilai / total) * 1000) / 10;
+      }
+
+      /* ---------- Foto paslon ---------- */
+
+      function urlFotoDrive(id) {
+        return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w480';
+      }
+
+      function cariPaslon(idPaslon) {
+        for (var i = 0; i < daftarPaslon.length; i += 1) {
+          if (daftarPaslon[i] && daftarPaslon[i].id === idPaslon) return daftarPaslon[i];
+        }
+        return null;
+      }
+
+      function terapkanPaslon() {
+        var judul = document.querySelectorAll('.legenda-calon[data-nama]');
+
+        for (var i = 0; i < judul.length; i += 1) {
+          var paslon = cariPaslon(judul[i].getAttribute('data-nama'));
+          if (paslon && paslon.nama) judul[i].textContent = paslon.nama;
+        }
+
+        pasangFotoLegenda();
+      }
+
+      function pasangFotoLegenda() {
+        var wadah = document.querySelectorAll('.legenda-foto');
+
+        for (var i = 0; i < wadah.length; i += 1) {
+          var nama = wadah[i].getAttribute('data-paslon');
+          var paslon = cariPaslon(nama);
+          var id = String((paslon && paslon.foto) || '').trim();
+          if (!id) continue;
+
+          var img = wadah[i].querySelector('img');
+          if (!img) continue;
+
+          img.alt = 'Foto ' + nama;
+          img.addEventListener('load', function () {
+            this.parentNode.classList.add('is-berfoto');
+          });
+          img.addEventListener('error', function () {
+            this.parentNode.classList.remove('is-berfoto');
+          });
+          img.src = urlFotoDrive(id);
+        }
+      }
+
+      /* ---------- Token sesi ---------- */
+
+      function bacaToken() {
+        try {
+          return window.sessionStorage.getItem(TOKEN_KEY) || '';
+        } catch (error) {
+          return '';
+        }
+      }
+
+      function simpanToken(token) {
+        state.token = token;
+        try {
+          window.sessionStorage.setItem(TOKEN_KEY, token);
+        } catch (error) {}
+      }
+
+      function lupakanToken() {
+        state.token = '';
+        try {
+          window.sessionStorage.removeItem(TOKEN_KEY);
+        } catch (error) {}
+      }
+
+      /* ---------- Label angka di atas batang ---------- */
+
+      var labelNilai = {
+        id: 'labelNilai',
+        afterDatasetsDraw: function (chart) {
+          var ctx = chart.ctx;
+          var meta = chart.getDatasetMeta(0);
+
+          ctx.save();
+          ctx.font = '600 12px "Plus Jakarta Sans", system-ui, sans-serif';
+          ctx.fillStyle = '#10233a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          meta.data.forEach(function (batang, index) {
+            ctx.fillText(angka(chart.data.datasets[0].data[index]), batang.x, batang.y - 6);
+          });
+
+          ctx.restore();
+        }
+      };
+
+      function siapkanChart() {
+        if (pieChart) return;
+
+        pieChart = new Chart($('pieChart'), {
+          type: 'doughnut',
+          data: {
+            labels: LABEL,
+            datasets: [{
+              data: [0, 0, 0, 0],
+              backgroundColor: WARNA,
+              borderColor: '#ffffff',
+              borderWidth: 2,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#10233a',
+                padding: 10,
+                callbacks: {
+                  label: function (ctx) {
+                    if (ctx.label === 'Tidak memilih') {
+                      return ' Tidak memilih: ' + angka(ctx.parsed) + ' pemilih';
+                    }
+
+                    var paslon = cariPaslon(ctx.label);
+                    var judul = paslon && paslon.nama ? ctx.label + ', ' + paslon.nama : ctx.label;
+                    return ' ' + judul + ': ' + angka(ctx.parsed) + ' suara';
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        barChart = new Chart($('barChart'), {
+          type: 'bar',
+          data: {
+            labels: LABEL,
+            datasets: [{
+              data: [0, 0, 0, 0],
+              backgroundColor: WARNA,
+              borderRadius: 6,
+              maxBarThickness: 72
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 22 } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#10233a',
+                padding: 10,
+                callbacks: {
+                  label: function (ctx) {
+                    if (ctx.label === 'Tidak memilih') {
+                      return ' ' + angka(ctx.parsed.y) + ' pemilih tidak memilih';
+                    }
+                    return ' ' + angka(ctx.parsed.y) + ' suara';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                border: { color: GARIS },
+                ticks: {
+                  color: TEKS,
+                  font: { family: 'Plus Jakarta Sans', size: 12 }
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: GARIS },
+                border: { display: false },
+                ticks: {
+                  color: TEKS,
+                  precision: 0,
+                  font: { family: 'Plus Jakarta Sans', size: 12 }
+                }
+              }
+            }
+          },
+          plugins: [labelNilai]
+        });
+      }
+
+      function tampilkanLogin(pesan, fokus) {
+        state.masuk = false;
+        $('dashboard').classList.add('d-none');
+        $('loginPanel').classList.remove('d-none');
+        $('liveWrap').classList.add('d-none');
+        $('logoutBtn').classList.add('d-none');
+        hentikanRefresh();
+
+        if (pesan) {
+          $('loginError').textContent = pesan;
+          $('loginError').classList.remove('d-none');
+        } else {
+          $('loginError').textContent = '';
+          $('loginError').classList.add('d-none');
+        }
+
+        if (fokus !== false) $('sandi').focus();
+      }
+
+      function tampilkanDashboard() {
+        state.masuk = true;
+        $('loginPanel').classList.add('d-none');
+        $('dashboard').classList.remove('d-none');
+        $('liveWrap').classList.remove('d-none');
+        $('logoutBtn').classList.remove('d-none');
+        mulaiRefresh();
+      }
+
+      function render(stats) {
+        siapkanChart();
+        state.statsTerakhir = stats;
+        $('revealBtn').disabled = false;
+
+        var total = Number(stats.total || 0);
+        var sudah = Number(stats.sudah || 0);
+        var belum = Number(stats.belum || 0);
+
+        var tidakMemilih = Number(stats.abstain != null ? stats.abstain : belum) || 0;
+
+        var nilai = [
+          Number(stats.paslon1 || 0),
+          Number(stats.paslon2 || 0),
+          Number(stats.paslon3 || 0),
+          tidakMemilih
+        ];
+
+        var suaraSah = nilai[0] + nilai[1] + nilai[2];
+        var dasarTidakMemilih = total || nilai.reduce(function (a, b) { return a + b; }, 0);
+
+        $('statTotal').textContent = angka(total);
+        $('statMasuk').textContent = angka(sudah);
+        $('statBelum').textContent = angka(belum);
+        $('statPersen').textContent =
+          persen(sudah, total).toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          }) + '%';
+
+        $('statMasukNote').textContent = suaraSah
+          ? angka(suaraSah) + ' surat suara di kotak suara'
+          : 'Belum ada surat suara';
+
+        $('pieTotal').textContent = suaraSah
+          ? angka(suaraSah) + ' suara sah dari ' + angka(total) + ' DPT'
+          : 'Belum ada suara';
+
+        pieChart.data.datasets[0].data = nilai;
+        barChart.data.datasets[0].data = nilai;
+        pieChart.update('none');
+        barChart.update('none');
+
+        $('pieBox').classList.remove('d-none');
+        $('pieEmpty').classList.toggle('d-none', suaraSah > 0);
+
+        LABEL.forEach(function (nama, index) {
+          var sel = document.querySelector('.legenda-angka[data-angka="' + nama + '"]');
+          if (!sel) return;
+
+          var dasar = index === 3 ? dasarTidakMemilih : suaraSah;
+
+          sel.textContent =
+            angka(nilai[index]) +
+            ' (' +
+            persen(nilai[index], dasar).toLocaleString('id-ID', {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            }) +
+            '%)';
+        });
+
+        $('updatedAt').textContent = 'Diperbarui ' + stats.updatedAt;
+        $('liveDot').classList.remove('is-error');
+      }
+
+      function gagalMuat() {
+        $('updatedAt').textContent = 'Gagal memperbarui, mencoba lagi';
+        $('liveDot').classList.add('is-error');
+      }
+
+      function muat() {
+        if (!state.token || state.memuat || !state.masuk) return;
+        state.memuat = true;
+        var tokenDipakai = state.token;
+
+        fetch(SCRIPT_URL + '?action=getStats&token=' + encodeURIComponent(tokenDipakai))
+          .then(function (res) { return res.json(); })
+          .then(function (stats) {
+            state.memuat = false;
+            if (state.token !== tokenDipakai || !state.masuk) return;
+
+            if (!stats || stats.auth === false) {
+              lupakanToken();
+              tampilkanLogin((stats && stats.message) || 'Sesi berakhir. Silakan masuk lagi.');
+              return;
+            }
+            render(stats);
+          })
+          .catch(function () {
+            state.memuat = false;
+            if (state.token === tokenDipakai && state.masuk) gagalMuat();
+          });
+      }
+
+      function mulaiRefresh() {
+        hentikanRefresh();
+        muat();
+        state.timer = setInterval(function () {
+          if (document.visibilityState === 'visible') muat();
+        }, REFRESH_MS);
+      }
+
+      function hentikanRefresh() {
+        if (state.timer) {
+          clearInterval(state.timer);
+          state.timer = null;
+        }
+      }
+
+      function setBusy(btn, busy, teks) {
+        if (busy) {
+          btn.dataset.label = btn.textContent;
+          btn.disabled = true;
+          btn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' + (teks || 'Memproses...');
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.label) btn.textContent = btn.dataset.label;
+        }
+      }
+
+      // Handle Login Admin
+      $('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (state.loginBusy) return;
+        var sandi = $('sandi').value;
+        $('loginError').classList.add('d-none');
+
+        if (!sandi) {
+          $('loginError').textContent = 'Isi password admin terlebih dahulu.';
+          $('loginError').classList.remove('d-none');
+          return;
+        }
+
+        state.loginBusy = true;
+        setBusy($('loginBtn'), true, 'Memeriksa...');
+
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'login', password: sandi })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (hasil) {
+          state.loginBusy = false;
+          setBusy($('loginBtn'), false);
+
+          if (!hasil || !hasil.ok) {
+            $('loginError').textContent = (hasil && hasil.message) || 'Login gagal.';
+            $('loginError').classList.remove('d-none');
+            $('sandi').select();
+            return;
+          }
+
+          simpanToken(hasil.token);
+          $('sandi').value = '';
+          $('loginError').classList.add('d-none');
+          tampilkanDashboard();
+        })
+        .catch(function () {
+          state.loginBusy = false;
+          setBusy($('loginBtn'), false);
+          $('loginError').textContent = 'Tidak bisa menghubungi server.';
+          $('loginError').classList.remove('d-none');
+        });
+      });
+
+      $('logoutBtn').addEventListener('click', function () {
+        var token = state.token;
+        lupakanToken();
+        tampilkanLogin('Anda sudah keluar.');
+        if (token) {
+          google.script.run.adminLogout(token);
+        }
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible' && state.masuk) muat();
+      });
+
+      var COUNTDOWN_DETIK = 10;
+      var DURASI_PERSEN_MS = 10000; 
+      var TAHAN_PERSEN_MS = 3000;
+
+      var kurangiGerak = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+      var reveal = {
+        aktif: false,
+        hasil: [],
+        giliran: 0,
+        stats: null,
+        tahap: 'count',
+        jeda: false,
+        anim: null,
+        timer: null,
+        frame: null,
+        timerFn: null,
+        timerSisa: 0,
+        timerMulai: 0,
+      };
+
+      var mintaFrame = window.requestAnimationFrame
+        ? function (cb) { return window.requestAnimationFrame(cb); }
+        : function (cb) { return window.setTimeout(function () { cb(waktuSekarang()); }, 16); };
+
+      var batalFrame = window.cancelAnimationFrame
+        ? function (id) { window.cancelAnimationFrame(id); }
+        : function (id) { window.clearTimeout(id); };
+
+      function waktuSekarang() {
+        return window.performance && window.performance.now ? window.performance.now() : Date.now();
+      }
+
+      function formatPersen(nilai) {
+        return Number(nilai || 0).toLocaleString('id-ID', {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        });
+      }
+
+      var audioCtx = null;
+
+      function pastikanAudio() {
+        if (!state.suaraAktif) return null;
+
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+
+        if (!audioCtx || audioCtx.state === 'closed') {
+          try {
+            audioCtx = new Ctx();
+          } catch (error) {
+            audioCtx = null;
+            return null;
+          }
+        }
+
+        if (audioCtx.state === 'suspended' && audioCtx.resume) {
+          var lanjut = audioCtx.resume();
+          if (lanjut && lanjut.catch) lanjut.catch(function () {});
+        }
+
+        return audioCtx;
+      }
+
+      function nada(ctx, frekuensi, durasi, volume, tipe, mulai) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        var t0 = typeof mulai === 'number' ? mulai : ctx.currentTime;
+
+        osc.type = tipe || 'sine';
+        osc.frequency.setValueAtTime(frekuensi, t0);
+
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durasi);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + durasi + 0.03);
+      }
+
+      function bunyiDetik(sisa) {
+        var ctx = pastikanAudio();
+        if (!ctx) return;
+
+        var akhir = sisa <= 3;
+        nada(ctx, akhir ? 1046.5 : 698.46, akhir ? 0.14 : 0.08, akhir ? 0.24 : 0.16, 'triangle');
+      }
+
+      function bunyiPersen() {
+        var ctx = pastikanAudio();
+        if (!ctx) return;
+
+        var t0 = ctx.currentTime;
+        [523.25, 659.25, 783.99].forEach(function (frekuensi, index) {
+          nada(ctx, frekuensi, 0.6, 0.12, 'sine', t0 + index * 0.12);
+        });
+      }
+
+      function bunyiRingkasan() {
+        var ctx = pastikanAudio();
+        if (!ctx) return;
+
+        var t0 = ctx.currentTime;
+        nada(ctx, 392, 0.5, 0.14, 'sine', t0);
+        nada(ctx, 523.25, 0.7, 0.12, 'sine', t0 + 0.16);
+        nada(ctx, 659.25, 0.9, 0.1, 'sine', t0 + 0.32);
+      }
+
+      function bunyiKlik() {
+        var ctx = pastikanAudio();
+        if (!ctx) return;
+        nada(ctx, 440, 0.06, 0.1, 'square');
+      }
+
+      function perbaruiTombolSuara() {
+        var tombol = $('revealSound');
+        tombol.textContent = state.suaraAktif ? 'Suara: aktif' : 'Suara: mati';
+        tombol.setAttribute('aria-pressed', state.suaraAktif ? 'true' : 'false');
+      }
+
+      function elemenLayarPenuh() {
+        return document.fullscreenElement || document.webkitFullscreenElement || null;
+      }
+
+      function tampilkanPetunjukLayarPenuh() {
+        $('revealFsHint').classList.remove('d-none');
+      }
+
+      function perbaruiTombolLayarPenuh() {
+        var aktif = !!elemenLayarPenuh();
+        $('revealFs').textContent = aktif ? 'Keluar layar penuh' : 'Layar penuh';
+        $('revealFs').setAttribute('aria-pressed', aktif ? 'true' : 'false');
+      }
+
+      function mintaLayarPenuh() {
+        var el = $('reveal');
+        var minta = el.requestFullscreen || el.webkitRequestFullscreen;
+
+        if (!minta) {
+          tampilkanPetunjukLayarPenuh();
+          return;
+        }
+
+        try {
+          var hasil = minta.call(el);
+          if (hasil && typeof hasil.catch === 'function') {
+            hasil.catch(function () { tampilkanPetunjukLayarPenuh(); });
+          }
+        } catch (error) {
+          tampilkanPetunjukLayarPenuh();
+        }
+      }
+
+      function keluarLayarPenuh() {
+        var keluar = document.exitFullscreen || document.webkitExitFullscreen;
+        if (!keluar || !elemenLayarPenuh()) return;
+
+        try {
+          var hasil = keluar.call(document);
+          if (hasil && typeof hasil.catch === 'function') hasil.catch(function () {});
+        } catch (error) {}
+      }
+
+      function jadwalkan(fn, ms) {
+        reveal.timerFn = fn;
+        reveal.timerSisa = ms;
+        reveal.timerMulai = waktuSekarang();
+        reveal.timer = window.setTimeout(function () {
+          reveal.timer = null;
+          reveal.timerFn = null;
+          reveal.timerSisa = 0;
+          fn();
+        }, ms);
+      }
+
+      function batalJadwal() {
+        if (reveal.timer) {
+          window.clearTimeout(reveal.timer);
+        }
+
+        reveal.timer = null;
+        reveal.timerFn = null;
+        reveal.timerSisa = 0;
+
+        batalAnimasi();
+      }
+
+      function tahanJadwal() {
+        if (!reveal.timer || !reveal.timerFn) return;
+
+        var lewat = waktuSekarang() - reveal.timerMulai;
+        reveal.timerSisa = Math.max(0, reveal.timerSisa - lewat);
+
+        window.clearTimeout(reveal.timer);
+        reveal.timer = null;
+      }
+
+      function lanjutkanJadwal() {
+        if (!reveal.timerFn || reveal.timer) return;
+        jadwalkan(reveal.timerFn, reveal.timerSisa);
+      }
+
+      function animasiAngka(dari, ke, durasi, onUpdate, selesai) {
+        if (kurangiGerak || durasi <= 0 || dari === ke) {
+          onUpdate(ke);
+          if (selesai) selesai();
+          return;
+        }
+
+        reveal.anim = {
+          dari: dari,
+          ke: ke,
+          durasi: durasi,
+          onUpdate: onUpdate,
+          selesai: selesai,
+          lewat: 0,
+          mulai: waktuSekarang(),
+          frame: null,
+        };
+
+        jalankanAnimasi();
+      }
+
+      function jalankanAnimasi() {
+        var anim = reveal.anim;
+        if (!anim || reveal.jeda) return;
+
+        function langkah(sekarangMs) {
+          var a = reveal.anim;
+          if (!a || reveal.jeda || !reveal.aktif) return;
+
+          var sekarang = typeof sekarangMs === 'number' ? sekarangMs : waktuSekarang();
+          var lewat = a.lewat + (sekarang - a.mulai);
+          var t = Math.min(1, lewat / a.durasi);
+          var halus = 1 - Math.pow(1 - t, 3);
+
+          a.onUpdate(a.dari + (a.ke - a.dari) * halus);
+
+          if (t < 1) {
+            a.frame = mintaFrame(langkah);
+            reveal.frame = a.frame;
+            return;
+          }
+
+          var selesai = a.selesai;
+          reveal.anim = null;
+          reveal.frame = null;
+          if (selesai) selesai();
+        }
+
+        anim.frame = mintaFrame(langkah);
+        reveal.frame = anim.frame;
+      }
+
+      function tahanAnimasi() {
+        var anim = reveal.anim;
+        if (!anim) return;
+
+        anim.lewat += waktuSekarang() - anim.mulai;
+
+        if (anim.frame) batalFrame(anim.frame);
+        anim.frame = null;
+        reveal.frame = null;
+      }
+
+      function lanjutkanAnimasi() {
+        var anim = reveal.anim;
+        if (!anim || reveal.jeda) return;
+
+        anim.mulai = waktuSekarang();
+        jalankanAnimasi();
+      }
+
+      function batalAnimasi() {
+        if (reveal.frame) batalFrame(reveal.frame);
+        reveal.frame = null;
+        reveal.anim = null;
+      }
+
+      function susunHasil(stats) {
+        var suara = [Number(stats.paslon1 || 0), Number(stats.paslon2 || 0), Number(stats.paslon3 || 0)];
+        var sah = suara[0] + suara[1] + suara[2];
+
+        return LABEL.slice(0, 3).map(function (id, index) {
+          var paslon = cariPaslon(id) || {};
+          return {
+            id: id,
+            nama: paslon.nama || id,
+            foto: String(paslon.foto || '').trim(),
+            suara: suara[index],
+            persen: sah ? (suara[index] / sah) * 100 : 0,
+          };
+        });
+      }
+
+      function tampilkanTahap(nama) {
+        reveal.tahap = nama;
+
+        $('revealCountView').classList.toggle('d-none', nama !== 'count');
+        $('revealScoreView').classList.toggle('d-none', nama !== 'score');
+        $('revealFinalView').classList.toggle('d-none', nama !== 'final');
+
+        var akhir = nama === 'final';
+        $('revealSkip').classList.toggle('d-none', akhir);
+        $('revealPause').classList.toggle('d-none', akhir);
+        $('revealReplay').classList.toggle('d-none', akhir);
+        $('revealPrev').classList.toggle('d-none', akhir);
+        $('revealNext').classList.toggle('d-none', akhir);
+      }
+
+      function perbaruiTombolNavigasi() {
+        var terakhir = reveal.giliran >= reveal.hasil.length - 1;
+
+        $('revealPrev').disabled = reveal.giliran <= 0;
+        $('revealNext').setAttribute(
+          'aria-label',
+          terakhir ? 'Tampilkan ringkasan hasil' : 'Paslon berikutnya'
+        );
+      }
+
+      function pindahPaslon(target) {
+        if (!reveal.aktif || reveal.tahap === 'final') return;
+        if (target < 0 || target >= reveal.hasil.length) return;
+
+        batalJadwal();
+        bunyiKlik();
+        jalankanPaslon(target);
+      }
+
+      function paslonSebelumnya() {
+        if (reveal.giliran <= 0) return;
+        pindahPaslon(reveal.giliran - 1);
+      }
+
+      function paslonBerikutnya() {
+        if (reveal.giliran >= reveal.hasil.length - 1) {
+          if (reveal.tahap !== 'final') tampilkanRingkasan();
+          return;
+        }
+        pindahPaslon(reveal.giliran + 1);
+      }
+
+      function perbaruiTombolJeda() {
+        $('revealPause').textContent = reveal.jeda ? 'Lanjut' : 'Jeda';
+        $('revealPause').setAttribute('aria-pressed', reveal.jeda ? 'true' : 'false');
+        $('revealJedaBadge').classList.toggle('d-none', !reveal.jeda);
+        $('reveal').classList.toggle('is-jeda', reveal.jeda);
+      }
+
+      function pasangJeda(ganti) {
+        reveal.jeda = ganti;
+
+        if (ganti) {
+          tahanJadwal();
+          tahanAnimasi();
+        } else {
+          lanjutkanAnimasi();
+          lanjutkanJadwal();
+        }
+
+        perbaruiTombolJeda();
+      }
+
+      function jedaPengumuman() {
+        if (!reveal.aktif || reveal.tahap === 'final') return;
+        pasangJeda(!reveal.jeda);
+        bunyiKlik();
+      }
+
+      function ulangiPaslon() {
+        if (!reveal.aktif || reveal.tahap === 'final') return;
+
+        batalJadwal();
+        reveal.jeda = false;
+        perbaruiTombolJeda();
+        bunyiKlik();
+
+        jalankanPaslon(reveal.giliran);
+      }
+
+      function isiFotoReveal(data) {
+        var wadah = $('revealFoto');
+        var img = wadah.querySelector('img');
+        var cadangan = wadah.querySelector('.foto-cadangan');
+
+        wadah.classList.remove('is-berfoto');
+        cadangan.textContent = (String(data.id).match(/\d/) || [''])[0] || '-';
+        img.alt = data.foto ? 'Foto ' + data.nama : '';
+        wadah.classList.toggle('d-none', !data.foto);
+
+        if (!data.foto) {
+          img.removeAttribute('src');
+          return;
+        }
+
+        img.onload = function () { wadah.classList.add('is-berfoto'); };
+        img.onerror = function () { wadah.classList.remove('is-berfoto'); };
+        img.src = urlFotoDrive(data.foto);
+      }
+
+      function tulisAngkaMundur(nilai) {
+        var el = $('revealCount');
+        el.textContent = String(nilai);
+        bunyiDetik(nilai);
+
+        if (kurangiGerak) return;
+
+        el.classList.remove('is-pop');
+        void el.offsetWidth;
+        el.classList.add('is-pop');
+      }
+
+      function hitungMundur(mulai, selesai) {
+        var sisa = mulai;
+        tulisAngkaMundur(sisa);
+
+        function detik() {
+          if (!reveal.aktif) return;
+
+          sisa -= 1;
+
+          if (sisa <= 0) {
+            selesai();
+            return;
+          }
+
+          tulisAngkaMundur(sisa);
+          jadwalkan(detik, 1000);
+        }
+
+        jadwalkan(detik, 1000);
+      }
+
+      function jalankanPaslon(index) {
+        if (!reveal.aktif) return;
+
+        var data = reveal.hasil[index];
+        reveal.giliran = index;
+
+        reveal.jeda = false;
+        perbaruiTombolJeda();
+
+        tampilkanTahap('count');
+        perbaruiTombolNavigasi();
+        $('revealStep').textContent = 'Paslon ' + (index + 1) + ' dari ' + reveal.hasil.length;
+        $('revealCountLabel').textContent = 'Paslon ' + (index + 1);
+
+        hitungMundur(COUNTDOWN_DETIK, function () {
+          tampilkanSkor(data, function () {
+            jadwalkan(function () {
+              if (index + 1 < reveal.hasil.length) jalankanPaslon(index + 1);
+              else tampilkanRingkasan();
+            }, TAHAN_PERSEN_MS);
+          });
+        });
+      }
+
+      function tampilkanSkor(data, selesai) {
+        tampilkanTahap('score');
+        bunyiPersen();
+        $('revealNama').textContent = data.nama;
+        isiFotoReveal(data);
+
+        var angkaEl = $('revealPersen');
+        var suaraEl = $('revealSuara');
+        var barEl = $('revealBarFill');
+
+        angkaEl.textContent = formatPersen(0);
+        suaraEl.textContent = '0 suara sah';
+        barEl.style.width = '0%';
+
+        animasiAngka(0, data.persen, DURASI_PERSEN_MS, function (nilai) {
+          var bagian = data.persen ? nilai / data.persen : 0;
+          var tampil = Math.min(100, Math.max(0, Number(nilai) || 0));
+          angkaEl.textContent = tampil.toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          });
+          suaraEl.textContent = angka(Math.round(data.suara * bagian)) + ' suara sah';
+          barEl.style.width = tampil.toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).replace(',', '.') + '%';
+        }, function () {
+          var finalTampil = Math.min(100, Math.max(0, Number(data.persen) || 0));
+          angkaEl.textContent = finalTampil.toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          });
+          suaraEl.textContent = angka(data.suara) + ' suara sah';
+          barEl.style.width = finalTampil.toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).replace(',', '.') + '%';
+          selesai();
+        });
+      }
+
+      function tampilkanRingkasan() {
+        if (!reveal.aktif) return;
+
+        batalJadwal();
+        reveal.jeda = false;
+        perbaruiTombolJeda();
+        bunyiRingkasan();
+        tampilkanTahap('final');
+        $('revealStep').textContent = 'Hasil akhir';
+
+        var wadah = $('revealHasil');
+        wadah.innerHTML = '';
+
+        reveal.hasil.forEach(function (data) {
+          var baris = document.createElement('div');
+          baris.className = 'hasil-baris';
+
+          var foto = document.createElement('span');
+          foto.className = 'hasil-foto foto-frame';
+
+          var img = document.createElement('img');
+          img.alt = data.foto ? 'Foto ' + data.nama : '';
+
+          var cadangan = document.createElement('span');
+          cadangan.className = 'foto-cadangan';
+          cadangan.setAttribute('aria-hidden', 'true');
+          cadangan.textContent = (String(data.id).match(/\d/) || [''])[0] || '-';
+
+          foto.appendChild(img);
+          foto.appendChild(cadangan);
+
+          if (data.foto) {
+            img.onload = function () { foto.classList.add('is-berfoto'); };
+            img.src = urlFotoDrive(data.foto);
+          }
+
+          var nama = document.createElement('span');
+          nama.className = 'hasil-nama';
+          nama.textContent = data.nama;
+
+          var persenEl = document.createElement('span');
+          persenEl.className = 'hasil-persen';
+          persenEl.textContent = formatPersen(data.persen) + '%';
+
+          var suaraEl = document.createElement('span');
+          suaraEl.className = 'hasil-suara';
+          suaraEl.textContent = angka(data.suara) + ' suara';
+
+          var bar = document.createElement('span');
+          bar.className = 'hasil-bar';
+          bar.setAttribute('aria-hidden', 'true');
+
+          var isiBar = document.createElement('span');
+          var lebarBar = Math.max(0, Math.min(100, Number(data.persen) || 0));
+          isiBar.style.width = lebarBar.toLocaleString('id-ID', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).replace(',', '.') + '%';
+          bar.appendChild(isiBar);
+
+          baris.appendChild(foto);
+          baris.appendChild(nama);
+          baris.appendChild(persenEl);
+          baris.appendChild(suaraEl);
+          baris.appendChild(bar);
+          wadah.appendChild(baris);
+        });
+
+        var sah = reveal.hasil.reduce(function (a, b) { return a + b.suara; }, 0);
+        var stats = reveal.stats || {};
+        var tidakMemilih = Number(stats.abstain != null ? stats.abstain : stats.belum) || 0;
+
+        var wadahRingkas = $('revealRingkas');
+        wadahRingkas.innerHTML = '';
+
+        [
+          { label: 'Suara sah', nilai: angka(sah), kunci: true },
+          { label: 'Tidak memilih', nilai: angka(tidakMemilih) },
+          {
+            label: 'Partisipasi',
+            nilai: formatPersen(stats.persen) + '%',
+            catatan: 'dari ' + angka(stats.total) + ' DPT'
+          }
+        ].forEach(function (item) {
+          var kotak = document.createElement('div');
+          kotak.className = 'ringkas-item' + (item.kunci ? ' is-key' : '');
+
+          var label = document.createElement('p');
+          label.className = 'ringkas-label';
+          label.appendChild(document.createTextNode(item.label + ' '));
+
+          var nilaiEl = document.createElement('span');
+          nilaiEl.className = 'ringkas-value';
+          nilaiEl.textContent = item.nilai;
+          label.appendChild(nilaiEl);
+          kotak.appendChild(label);
+
+          if (item.catatan) {
+            var catatan = document.createElement('span');
+            catatan.className = 'ringkas-note';
+            catatan.textContent = ' ' + item.catatan;
+            kotak.appendChild(catatan);
+          }
+
+          wadahRingkas.appendChild(kotak);
+        });
+
+        $('revealClose').focus();
+      }
+
+      function mulaiPengumuman() {
+        if (reveal.aktif || !state.statsTerakhir) return;
+
+        reveal.aktif = true;
+        reveal.stats = state.statsTerakhir;
+        reveal.hasil = susunHasil(reveal.stats);
+        reveal.giliran = 0;
+        reveal.jeda = false;
+        reveal.anim = null;
+
+        hentikanRefresh();
+
+        $('reveal').classList.remove('d-none');
+        $('reveal').setAttribute('aria-hidden', 'false');
+        $('revealFsHint').classList.add('d-none');
+        perbaruiTombolSuara();
+        document.body.style.overflow = 'hidden';
+        $('dashboard').setAttribute('aria-hidden', 'true');
+
+        if (state.suaraAktif) pastikanAudio();
+        mintaLayarPenuh();
+
+        jalankanPaslon(0);
+        $('revealClose').focus();
+      }
+
+      function tutupPengumuman() {
+        if (!reveal.aktif) return;
+
+        reveal.aktif = false;
+        batalJadwal();
+        reveal.jeda = false;
+        perbaruiTombolJeda();
+        keluarLayarPenuh();
+        $('revealFsHint').classList.add('d-none');
+
+        $('reveal').classList.add('d-none');
+        $('reveal').setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        $('dashboard').removeAttribute('aria-hidden');
+
+        if (state.masuk) mulaiRefresh();
+        $('revealBtn').focus();
+      }
+
+      $('revealBtn').addEventListener('click', mulaiPengumuman);
+      $('revealClose').addEventListener('click', tutupPengumuman);
+
+      $('revealSkip').addEventListener('click', function () {
+        if (reveal.aktif) tampilkanRingkasan();
+      });
+
+      $('revealPause').addEventListener('click', jedaPengumuman);
+      $('revealReplay').addEventListener('click', ulangiPaslon);
+      $('revealPrev').addEventListener('click', paslonSebelumnya);
+      $('revealNext').addEventListener('click', paslonBerikutnya);
+
+      $('revealFs').addEventListener('click', function () {
+        if (elemenLayarPenuh()) keluarLayarPenuh();
+        else mintaLayarPenuh();
+      });
+
+      $('revealSound').addEventListener('click', function () {
+        state.suaraAktif = !state.suaraAktif;
+        perbaruiTombolSuara();
+
+        if (state.suaraAktif) {
+          pastikanAudio();
+          bunyiKlik();
+        }
+      });
+
+      ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (nama) {
+        document.addEventListener(nama, perbaruiTombolLayarPenuh);
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && reveal.aktif && !elemenLayarPenuh()) tutupPengumuman();
+      });
+
+      // Event listener tombol PDF dipindahkan ke dalam IIFE agar fungsi $, setBusy, dan state dapat diakses dengan benar
+      $('pdfBtn').addEventListener('click', function() {
+        var btn = this;
+        setBusy(btn, true, 'Membuat PDF...');
+        
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'exportPdf', token: state.token })
+        })
+        .then(function (res) { return res.json(); })
+        .then(function(res) {
+          setBusy(btn, false);
+          if (!res || !res.ok) {
+            alert((res && res.message) || 'Gagal membuat PDF.');
+            return;
+          }
+          var sampleString = atob(res.base64);
+          var len = sampleString.length;
+          var bytes = new Uint8Array(len);
+          for (var i = 0; i < len; i++) {
+            bytes[i] = sampleString.charCodeAt(i);
+          }
+          var blob = new Blob([bytes], { type: 'application/pdf' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = res.filename || 'Rekap_OSIM.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        })
+        .catch(function() {
+          setBusy(btn, false);
+          alert('Gagal menghubungi server untuk mengunduh PDF.');
+        });
+      });
+
+      google.script.run
+        .withSuccessHandler(function (daftar) {
+          daftarPaslon = daftar || [];
+          terapkanPaslon();
+        })
+        .withFailureHandler(function () {})
+        .getPaslon();
+
+      (function mulai() {
+        var tersimpan = bacaToken();
+
+        if (!tersimpan) {
+          tampilkanLogin('', false);
+          return;
+        }
+
+        state.token = tersimpan;
+        tampilkanDashboard();
+      })();
+    })();
+  </script>
+</body>
+</html>
