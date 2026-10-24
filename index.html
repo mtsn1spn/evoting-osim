@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pemilihan OSIM</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --ink: #10233a;
+      --ink-soft: #516173;
+      --line: #dce3e9;
+      --paper: #f1f4f6;
+      --accent: #0e6b5b;
+      --accent-dark: #0a5446;
+      --accent-soft: #eaf4f1;
+      --muted: #8a93a5;
+    }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 64px;
+    }
+
+    .school {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .school-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 2px 0 0;
+    }
+
+    .school-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .school-logo {
+      width: 28px;
+      height: 28px;
+    }
+
+    .page {
+      padding-top: 40px;
+      padding-bottom: 72px;
+    }
+
+    .page-title {
+      font-size: 38px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0 0 8px;
+    }
+
+    .page-sub {
+      font-size: 17px;
+      color: var(--ink-soft);
+      margin: 0 0 28px;
+      max-width: 70ch;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 26px;
+    }
+
+    .panel + .panel {
+      margin-top: 18px;
+    }
+
+    #ballotPanel {
+      margin-top: 18px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin: 0;
+    }
+
+    .panel-meta {
+      font-size: 15px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .metric + .metric {
+      padding-left: 18px;
+      border-left: 1px solid var(--line);
+    }
+
+    .metric-label {
+      font-size: 16px;
+      color: var(--ink-soft);
+    }
+
+    .metric-value {
+      font-size: 44px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      line-height: 1.15;
+    }
+
+    .progress {
+      height: 14px;
+      border-radius: 999px;
+      background: #e6ebef;
+    }
+
+    .progress-bar {
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    .form-label {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      border-color: var(--line);
+      padding: 16px 18px;
+      font-size: 17px;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 107, 91, 0.15);
+    }
+
+    .token-input {
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 600;
+      font-size: 24px;
+    }
+
+    .form-text {
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .btn-primary {
+      --bs-btn-bg: var(--accent);
+      --bs-btn-border-color: var(--accent);
+      --bs-btn-hover-bg: var(--accent-dark);
+      --bs-btn-hover-border-color: var(--accent-dark);
+      --bs-btn-active-bg: var(--accent-dark);
+      --bs-btn-active-border-color: var(--accent-dark);
+      --bs-btn-disabled-bg: var(--accent);
+      --bs-btn-disabled-border-color: var(--accent);
+      --bs-btn-focus-shadow-rgb: 14, 107, 91;
+      font-weight: 600;
+    }
+
+    .btn-lg {
+      padding: 16px 24px;
+      font-size: 19px;
+    }
+
+    .form-check-input:checked {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .form-check-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(14, 107, 91, 0.15);
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .option {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .option:hover {
+      border-color: #aebecb;
+    }
+
+    .option.is-selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .option .form-check-input {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 30px;
+      height: 30px;
+      margin: 0;
+      z-index: 1;
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+    }
+
+    .foto-frame {
+      position: relative;
+      flex: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef2f5;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+    }
+
+    .foto-frame img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .foto-frame.is-berfoto img {
+      display: block;
+    }
+
+    .foto-frame.is-berfoto .foto-cadangan {
+      display: none;
+    }
+
+    .foto-cadangan {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .option-photo {
+      width: 100%;
+      height: auto;
+      min-height: 200px;
+      aspect-ratio: 3 / 4;
+      border-radius: 12px;
+    }
+
+    .confirm-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .confirm-photo {
+      width: 120px;
+      height: 160px;
+      border-radius: 10px;
+    }
+
+    .option-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .option-title {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .option-sub {
+      font-size: 16px;
+      line-height: 1.2;
+      color: var(--ink-soft);
+    }
+
+    .ballot-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .ballot-title {
+      font-size: 30px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .ballot-voter {
+      font-size: 17px;
+      color: var(--muted);
+      margin: 0;
+      text-align: right;
+    }
+
+    .confirm-choice {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    /* ---------- Lapisan kirim suara ---------- */
+
+    .kirim-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1090;
+      display: grid;
+      place-items: center;
+      padding: 24px 18px;
+      background: rgba(9, 24, 38, 0.94);
+      color: #fff;
+      text-align: center;
+    }
+
+    .kirim-box {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .kirim-mulai {
+      animation: kirimMasuk 0.32s ease-out;
+    }
+
+    .kirim-cincin {
+      display: block;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      border: 6px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #7fe0c9;
+      animation: kirimPutar 0.85s linear infinite;
+    }
+
+    .kirim-cek {
+      display: grid;
+      place-items: center;
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      animation: kirimPop 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
+    }
+
+    .kirim-cek svg path {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: kirimGaris 0.4s 0.16s ease-out forwards;
+    }
+
+    .kirim-teks {
+      font-size: 34px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .kirim-sub {
+      font-size: 19px;
+      color: #b9c7d4;
+      margin: 0;
+    }
+
+    @keyframes kirimMasuk {
+      from { transform: translateY(8px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes kirimPutar {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes kirimPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes kirimGaris {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .kirim-cincin { animation-duration: 1.8s; }
+      .kirim-mulai, .kirim-cek { animation: none; }
+      .kirim-cek svg path { animation: none; stroke-dashoffset: 0; }
+    }
+
+    .modal-content {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .modal-body {
+      font-size: 17px;
+    }
+
+    .modal-body .small {
+      font-size: 15px;
+    }
+
+    .modal-footer .btn {
+      padding: 12px 20px;
+      font-size: 17px;
+    }
+
+    .alert {
+      font-size: 16px;
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    @media (max-width: 420px) {
+      .page-title { font-size: 28px; }
+      .metric-value { font-size: 34px; }
+      .metric-label { font-size: 14px; }
+      .metrics { gap: 10px; }
+      .metric + .metric { padding-left: 10px; }
+      .panel { padding: 18px 16px; }
+      .options { gap: 8px; }
+      .option { padding: 10px; gap: 8px; }
+      .option .form-check-input { top: 6px; left: 6px; width: 24px; height: 24px; }
+      .option-photo { min-height: 110px; }
+      .option-title { font-size: 17px; }
+      .option-sub { font-size: 12px; }
+      .ballot-title { font-size: 24px; }
+      .confirm-choice { font-size: 24px; }
+      .confirm-photo { width: 96px; height: 128px; }
+      .kirim-teks { font-size: 26px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="wrap">
+      <div class="school-wrapper">
+        <img class="school-logo" src="https://drive.google.com/thumbnail?id=1J84xXGNw0lXZ9yTzaz7U4cucwNk3y3DS" alt="Logo MTsN" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;">
+        <p class="school">MTsN 1 Kota Sungai Penuh</p>
+        <p class="school-sub">Pemilihan Ketua dan Wakil Ketua OSIM</p>
+        <button class="btn btn-sm btn-outline-secondary float-end" id="fullscreenBtn" style="margin-left: 8px;" title="Fullscreen/Keluar">Fullscreen</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap page">
+    <h1 class="page-title">Pemilihan Ketua dan Wakil Ketua OSIM</h1>
+    <p class="page-sub">Masukkan token dari panitia untuk masuk ke bilik suara. Satu token berlaku untuk satu suara.</p>
+
+    <!-- Kartu partisipasi: angka diambil dari getParticipation() tiap 15 detik -->
+    <section class="panel" id="partisipasiPanel" aria-labelledby="progressTitle">
+      <div class="panel-head">
+        <h2 class="panel-title" id="progressTitle">Partisipasi pemilih</h2>
+        <span class="panel-meta" id="progressUpdated">Memuat data</span>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <span class="metric-label">Total pemilih</span>
+          <span class="metric-value" id="statTotal">&ndash;</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Sudah memilih</span>
+          <span class="metric-value" id="statVoted">&ndash;</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Partisipasi</span>
+          <span class="metric-value" id="statPercent">&ndash;</span>
+        </div>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Partisipasi pemilih" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressWrap">
+        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+      </div>
+    </section>
+
+    <!-- Langkah 1: login -->
+    <section id="loginPanel" class="panel">
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="token" class="form-label">Token</label>
+          <input type="text" class="form-control token-input" id="token" name="token"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 placeholder="Contoh: ABC123" maxlength="15" required autofocus>
+          <div class="form-text">Masukkan token dari panitia. Token hanya bisa dipakai sekali.</div>
+        </div>
+
+        <div class="alert alert-success d-none" id="loginNote" role="status"></div>
+        <div class="alert alert-danger d-none" id="loginError" role="alert" aria-live="assertive"></div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100" id="loginBtn">Masuk bilik suara</button>
+      </form>
+    </section>
+
+    <!-- Langkah 2: bilik suara -->
+    <section id="ballotPanel" class="d-none" aria-labelledby="ballotTitle">
+      <div class="ballot-head">
+        <h2 class="ballot-title" id="ballotTitle" tabindex="-1">Bilik suara</h2>
+        <p class="ballot-voter" id="ballotVoter"></p>
+      </div>
+
+      <form id="ballotForm" novalidate>
+        <div class="options" role="radiogroup" aria-labelledby="ballotTitle">
+          <label class="option" for="p1">
+            <input class="form-check-input" type="radio" name="pilihan" id="p1" value="Paslon 1">
+            <span class="option-photo foto-frame" data-paslon="Paslon 1">
+              <img alt="Foto Paslon 1">
+              <span class="foto-cadangan" aria-hidden="true">1</span>
+            </span>
+            <span class="option-text">
+              <span class="option-title">Paslon 1</span>
+              <span class="option-sub" data-nama="Paslon 1">Nama Paslon 1</span>
+            </span>
+          </label>
+
+          <label class="option" for="p2">
+            <input class="form-check-input" type="radio" name="pilihan" id="p2" value="Paslon 2">
+            <span class="option-photo foto-frame" data-paslon="Paslon 2">
+              <img alt="Foto Paslon 2">
+              <span class="foto-cadangan" aria-hidden="true">2</span>
+            </span>
+            <span class="option-text">
+              <span class="option-title">Paslon 2</span>
+              <span class="option-sub" data-nama="Paslon 2">Nama Paslon 2</span>
+            </span>
+          </label>
+
+          <label class="option" for="p3">
+            <input class="form-check-input" type="radio" name="pilihan" id="p3" value="Paslon 3">
+            <span class="option-photo foto-frame" data-paslon="Paslon 3">
+              <img alt="Foto Paslon 3">
+              <span class="foto-cadangan" aria-hidden="true">3</span>
+            </span>
+            <span class="option-text">
+              <span class="option-title">Paslon 3</span>
+              <span class="option-sub" data-nama="Paslon 3">Nama Paslon 3</span>
+            </span>
+          </label>
+        </div>
+
+        <p class="form-text mt-3 mb-0">Pilih satu paslon. Suara yang sudah dikirim tidak bisa diubah, dan token langsung hangus.</p>
+
+        <div class="alert alert-danger d-none mt-3" id="ballotError" role="alert" aria-live="assertive"></div>
+
+        <div class="d-grid gap-2 mt-4">
+          <button type="submit" class="btn btn-primary btn-lg" id="reviewBtn">Kirim suara</button>
+          <button type="button" class="btn btn-link text-muted text-decoration-none" id="backBtn">Batal dan kembali</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Lapisan kirim suara: animasi loading lalu konfirmasi berhasil -->
+    <div class="kirim-layer d-none" id="kirimLayer" role="status" aria-live="polite">
+      <div class="kirim-box">
+        <div class="kirim-mulai" id="kirimLoading">
+          <span class="kirim-cincin" aria-hidden="true"></span>
+          <p class="kirim-teks">Mengirim suara...</p>
+          <p class="kirim-sub">Mohon tunggu sebentar, jangan tutup halaman ini</p>
+        </div>
+        <div class="kirim-mulai d-none" id="kirimSukses">
+          <span class="kirim-cek" aria-hidden="true">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
+          </span>
+          <p class="kirim-teks">Suara Anda sudah tercatat</p>
+          <p class="kirim-sub">Token ini sudah dipakai. Silakan beri token berikutnya.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal konfirmasi -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0 pb-0">
+          <h2 class="modal-title fs-5" id="confirmTitle">Periksa pilihan Anda</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-row">
+            <span class="confirm-photo foto-frame d-none" id="confirmPhoto">
+              <img alt="">
+              <span class="foto-cadangan" aria-hidden="true">&ndash;</span>
+            </span>
+            <div>
+              <p class="text-muted small mb-0">Anda memilih</p>
+              <p class="confirm-choice" id="confirmChoice">&ndash;</p>
+            </div>
+          </div>
+          <p class="text-muted small mb-0 mt-3">Setelah dikirim, suara tidak bisa diubah dan token tidak bisa dipakai lagi.</p>
+          <div class="alert alert-danger d-none mt-3 mb-0" id="modalError" role="alert" aria-live="assertive"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary" id="cancelBtn" data-bs-dismiss="modal">Periksa lagi</button>
+          <button type="button" class="btn btn-primary" id="confirmBtn">Kirim suara</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // URL Web App Google Apps Script
+      var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr0ukvi2Wv00vGw6ih7y0iYjluoQj8Jm1ApEte2B9uiGXW6sH2mhEqlTYuuhPN_GeK/exec'; 
+      var REFRESH_MS = 15000;
+      var daftarPaslon = [];
+
+      var state = {
+        token: '',
+        pilihan: '',
+        busy: false,
+        voted: false,
+        timer: null,
+        fetchingProgress: false
+      };
+
+      function $(id) {
+        return document.getElementById(id);
+      }
+
+      /* ---------- Panggilan server via Fetch ---------- */
+
+      function panggilParticipation() {
+        return fetch(SCRIPT_URL + '?action=getParticipation')
+          .then(function (res) { return res.json(); });
+      }
+
+      function panggilPaslon() {
+        return fetch(SCRIPT_URL + '?action=getPaslon')
+          .then(function (res) { return res.json(); });
+      }
+
+      function panggilVerify(token) {
+        return fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'verify', token: token })
+        }).then(function (res) { return res.json(); });
+      }
+
+      function panggilSubmit(token, pilihan) {
+        return fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'submit', token: token, pilihan: pilihan })
+        }).then(function (res) { return res.json(); });
+      }
+
+      /* ---------- Partisipasi ---------- */
+
+      function renderProgress(stats) {
+        var persen = Math.max(0, Math.min(100, Number(stats.persen) || 0));
+
+        $('statTotal').textContent = Number(stats.total || 0).toLocaleString('id-ID');
+        $('statVoted').textContent = Number(stats.sudah || 0).toLocaleString('id-ID');
+        $('statPercent').textContent =
+          persen.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+
+        $('progressBar').style.width = persen + '%';
+        $('progressWrap').setAttribute('aria-valuenow', String(Math.round(persen)));
+        $('progressUpdated').textContent = 'Diperbarui ' + stats.updatedAt;
+      }
+
+      function refreshProgress() {
+        if (state.fetchingProgress) return;
+        state.fetchingProgress = true;
+
+        panggilParticipation()
+          .then(function (stats) {
+            if (stats) renderProgress(stats);
+          })
+          .catch(function () {
+            $('progressUpdated').textContent = 'Gagal memuat data';
+          })
+          .then(function () {
+            state.fetchingProgress = false;
+          });
+      }
+
+      function startLoop() {
+        stopLoop();
+        state.timer = setInterval(function () {
+          if (document.visibilityState === 'visible') refreshProgress();
+        }, REFRESH_MS);
+      }
+
+      function stopLoop() {
+        if (state.timer) {
+          clearInterval(state.timer);
+          state.timer = null;
+        }
+      }
+
+      /* ---------- Util UI ---------- */
+
+      function showError(id, pesan) {
+        var box = $(id);
+        box.textContent = pesan;
+        box.classList.remove('d-none');
+      }
+
+      function clearError(id) {
+        var box = $(id);
+        box.textContent = '';
+        box.classList.add('d-none');
+      }
+
+      function tampilkanCatatan(teks) {
+        var box = $('loginNote');
+        box.textContent = teks;
+        box.classList.remove('d-none');
+      }
+
+      function clearCatatan() {
+        var box = $('loginNote');
+        box.textContent = '';
+        box.classList.add('d-none');
+      }
+
+      function setBusy(btn, busy, teks) {
+        if (busy) {
+          btn.dataset.label = btn.textContent;
+          btn.disabled = true;
+          btn.innerHTML =
+            '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' +
+            (teks || 'Memproses...');
+        } else {
+          btn.disabled = false;
+          if (btn.dataset.label) btn.textContent = btn.dataset.label;
+        }
+      }
+
+      function cegahKeluar(event) {
+        if (state.voted) return;
+        event.preventDefault();
+        event.returnValue = '';
+      }
+
+      /* ---------- Foto paslon ---------- */
+
+      function urlFotoDrive(id) {
+        return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w480';
+      }
+
+      function cariPaslon(idPaslon) {
+        for (var i = 0; i < daftarPaslon.length; i += 1) {
+          if (daftarPaslon[i] && daftarPaslon[i].id === idPaslon) return daftarPaslon[i];
+        }
+        return null;
+      }
+
+      function terapkanPaslon() {
+        var judul = document.querySelectorAll('.option-sub[data-nama]');
+
+        for (var i = 0; i < judul.length; i += 1) {
+          var paslon = cariPaslon(judul[i].getAttribute('data-nama'));
+          if (paslon && paslon.nama) judul[i].textContent = paslon.nama;
+        }
+
+        pasangFotoPaslon();
+      }
+
+      function pasangFotoPaslon() {
+        var wadah = document.querySelectorAll('.option-photo');
+
+        for (var i = 0; i < wadah.length; i += 1) {
+          var nama = wadah[i].getAttribute('data-paslon');
+          var paslon = cariPaslon(nama);
+          var id = String((paslon && paslon.foto) || '').trim();
+          if (!id) continue;
+
+          var img = wadah[i].querySelector('img');
+          if (!img) continue;
+
+          img.alt = 'Foto ' + nama;
+          img.addEventListener('load', function () {
+            this.parentNode.classList.add('is-berfoto');
+          });
+          img.addEventListener('error', function () {
+            this.parentNode.classList.remove('is-berfoto');
+          });
+          img.src = urlFotoDrive(id);
+        }
+      }
+
+      function isiFotoKonfirmasi(pilihan) {
+        var wadah = $('confirmPhoto');
+        var img = wadah.querySelector('img');
+        var cadangan = wadah.querySelector('.foto-cadangan');
+        var paslon = cariPaslon(pilihan);
+        var id = String((paslon && paslon.foto) || '').trim();
+        var nomor = (String(pilihan).match(/\d/) || [''])[0];
+
+        wadah.classList.remove('is-berfoto');
+        wadah.classList.toggle('d-none', !id);
+        cadangan.textContent = nomor || '-';
+        img.alt = 'Foto ' + pilihan;
+
+        if (!id) {
+          img.removeAttribute('src');
+          return;
+        }
+
+        img.onload = function () {
+          wadah.classList.add('is-berfoto');
+        };
+        img.onerror = function () {
+          wadah.classList.remove('is-berfoto');
+        };
+        img.src = urlFotoDrive(id);
+      }
+
+      /* ---------- Login ---------- */
+
+      $('loginForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (state.busy) return;
+
+        clearError('loginError');
+        clearCatatan();
+
+        var token = $('token').value.trim().toUpperCase();
+
+        if (!token) {
+          showError('loginError', 'Isi token terlebih dahulu.');
+          return;
+        }
+
+        state.busy = true;
+        setBusy($('loginBtn'), true, 'Memeriksa data...');
+
+        panggilVerify(token)
+          .then(function (hasil) {
+            if (!hasil || !hasil.ok) {
+              showError('loginError', (hasil && hasil.message) || 'Token tidak cocok.');
+              return;
+            }
+            state.token = token;
+            if (hasil.fullscreenOnly) {
+              window.__fullscreenEnabled = true;
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(function() {});
+              }
+              return;
+            }
+            bukaBilik(hasil);
+          })
+          .catch(function () {
+            showError('loginError', 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.');
+          })
+          .then(function () {
+            state.busy = false;
+            setBusy($('loginBtn'), false);
+          });
+      });
+
+      function bukaBilik(voter) {
+        $('loginPanel').classList.add('d-none');
+        $('ballotPanel').classList.remove('d-none');
+        $('partisipasiPanel').classList.add('d-none');
+
+        var keterangan = voter.nama || '';
+        if (voter.kelas) keterangan += (keterangan ? ', kelas ' : 'Kelas ') + voter.kelas;
+        $('ballotVoter').textContent = keterangan;
+
+        window.__fullscreenEnabled = false;
+        $('ballotTitle').focus();
+      }
+
+      /* ---------- Pilih opsi ---------- */
+
+      $('ballotForm').addEventListener('change', function (event) {
+        if (event.target.name !== 'pilihan') return;
+
+        state.pilihan = event.target.value;
+        var semua = document.querySelectorAll('.option');
+        for (var i = 0; i < semua.length; i += 1) semua[i].classList.remove('is-selected');
+
+        var kartu = event.target.closest('.option');
+        if (kartu) kartu.classList.add('is-selected');
+
+        clearError('ballotError');
+      });
+
+      function labelPilihan() {
+        var terpilih = document.querySelector('input[name="pilihan"]:checked');
+        if (!terpilih) return '';
+        var kartu = terpilih.closest('.option');
+        var judul = kartu.querySelector('.option-title').textContent;
+        var sub = kartu.querySelector('.option-sub').textContent;
+        return judul + ' (' + sub + ')';
+      }
+
+      /* ---------- Buka konfirmasi ---------- */
+
+      var modalEl = $('confirmModal');
+      var confirmModal = new bootstrap.Modal(modalEl);
+
+      modalEl.addEventListener('hide.bs.modal', function (event) {
+        if (state.busy) event.preventDefault();
+      });
+
+      $('ballotForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        clearError('ballotError');
+
+        if (!state.pilihan) {
+          showError('ballotError', 'Pilih satu opsi sebelum mengirim suara.');
+          return;
+        }
+
+        clearError('modalError');
+        $('confirmChoice').textContent = labelPilihan();
+        isiFotoKonfirmasi(state.pilihan);
+        $('confirmBtn').disabled = false;
+        confirmModal.show();
+      });
+
+      /* ---------- Kirim suara ---------- */
+
+      var JEDA_SUKSES_MS = 1600;
+
+      function tampilkanKirim(mode) {
+        $('kirimLayer').classList.remove('d-none');
+        $('kirimLoading').classList.toggle('d-none', mode !== 'loading');
+        $('kirimSukses').classList.toggle('d-none', mode !== 'sukses');
+      }
+
+      function sembunyikanKirim() {
+        $('kirimLayer').classList.add('d-none');
+      }
+
+      $('confirmBtn').addEventListener('click', function () {
+        if (state.busy || state.voted) return;
+
+        state.busy = true;
+        clearError('modalError');
+        setBusy($('confirmBtn'), true, 'Mengirim...');
+        tampilkanKirim('loading');
+
+        panggilSubmit(state.token, state.pilihan)
+          .then(function (hasil) {
+            if (!hasil || !hasil.ok) {
+              sembunyikanKirim();
+              showError('modalError', (hasil && hasil.message) || 'Suara gagal dikirim.');
+              state.busy = false;
+              setBusy($('confirmBtn'), false);
+              return;
+            }
+
+            suksesKirim();
+          })
+          .catch(function () {
+            sembunyikanKirim();
+            showError(
+              'modalError',
+              'Koneksi terputus saat mengirim. Coba kirim sekali lagi. Bila token Anda sudah tidak bisa dipakai, hubungi panitia.'
+            );
+            state.busy = false;
+            setBusy($('confirmBtn'), false);
+          });
+      });
+
+      function suksesKirim() {
+        state.voted = true;
+        state.busy = false;
+        window.removeEventListener('beforeunload', cegahKeluar);
+        setBusy($('confirmBtn'), false);
+        confirmModal.hide();
+        tampilkanKirim('sukses');
+        window.setTimeout(kembaliKeToken, JEDA_SUKSES_MS);
+      }
+
+      function resetBilik(pesan) {
+        state.pilihan = '';
+        state.token = '';
+        state.voted = false;
+
+        var radio = document.querySelectorAll('input[name="pilihan"]');
+        for (var i = 0; i < radio.length; i += 1) radio[i].checked = false;
+
+        var kartu = document.querySelectorAll('.option');
+        for (var j = 0; j < kartu.length; j += 1) kartu[j].classList.remove('is-selected');
+
+        $('ballotPanel').classList.add('d-none');
+        $('loginPanel').classList.remove('d-none');
+        $('partisipasiPanel').classList.remove('d-none');
+        $('token').value = '';
+
+        clearError('ballotError');
+        clearError('modalError');
+        clearError('loginError');
+
+        if (pesan) tampilkanCatatan(pesan);
+        else clearCatatan();
+
+        window.removeEventListener('beforeunload', cegahKeluar);
+        refreshProgress();
+        $('token').focus();
+      }
+
+      function kembaliKeToken() {
+        sembunyikanKirim();
+        resetBilik('Terima kasih, suara sudah tercatat. Masukkan token berikutnya.');
+      }
+
+      $('backBtn').addEventListener('click', function () {
+        if (state.busy) return;
+        resetBilik('');
+      });
+
+      panggilPaslon()
+        .then(function (daftar) {
+          daftarPaslon = daftar || [];
+          terapkanPaslon();
+        })
+        .catch(function () {});
+
+      refreshProgress();
+      startLoop();
+    })();
+  </script>
+</body>
+</html>
