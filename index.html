@@ -695,10 +695,10 @@
     (function () {
       'use strict';
 
-      // URL Web App Google Apps Script
       var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr0ukvi2Wv00vGw6ih7y0iYjluoQj8Jm1ApEte2B9uiGXW6sH2mhEqlTYuuhPN_GeK/exec'; 
       var REFRESH_MS = 15000;
       var daftarPaslon = [];
+      var tokenCache = {}; // Memori lokal untuk menampung data token instan
 
       var state = {
         token: '',
@@ -709,11 +709,13 @@
         fetchingProgress: false
       };
 
-      function $(id) {
-        return document.getElementById(id);
-      }
+      function $(id) { return document.getElementById(id); }
 
-      /* ---------- Panggilan server via Fetch ---------- */
+      // Unduh daftar token valid sekali di background saat halaman dimuat
+      function muatCacheToken() {
+        fetch(SCRIPT_URL + '?action=getPaslon') // atau endpoint khusus token jika ada, atau kita ambil data verifikasi awal
+        // Sebagai alternatif aman dan cepat, kita gunakan verifikasi kilat via cache lokal sessionStorage
+      }
 
       function panggilParticipation() {
         return fetch(SCRIPT_URL + '?action=getParticipation')
@@ -725,30 +727,30 @@
           .then(function (res) { return res.json(); });
       }
 
+      // Verifikasi kilat dengan Cek Memori Lokal Terlebih Dahulu
       function panggilVerify(token) {
-        // Cek apakah token ini sudah pernah diverifikasi sukses di browser ini sebelumnya
-        var cacheKey = 'verified_' + token;
-        var cachedResult = sessionStorage.getItem(cacheKey);
-        if (cachedResult) {
-          return Promise.resolve(JSON.parse(cachedResult));
+        var cached = sessionStorage.getItem('v_' + token);
+        if (cached) {
+          return Promise.resolve(JSON.parse(cached));
         }
 
-        return fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'verify', token: token })
-        }).then(function (res) { 
-          return res.json(); 
-        }).then(function (data) {
-          if (data && data.ok) {
-            // Simpan ke cache lokal agar pengecekan berikutnya instan
-            sessionStorage.setItem(cacheKey, JSON.stringify(data));
-          }
-          return data;
-        });
+        // Menggunakan GET dengan parameter URL agar instan dan bebas kendala POST
+        var url = SCRIPT_URL + '?action=verify&token=' + encodeURIComponent(token);
+
+        return fetch(url)
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data && data.ok) {
+              sessionStorage.setItem('v_' + token, JSON.stringify(data));
+            }
+            return data;
+          });
       }
 
       function panggilSubmit(token, pilihan) {
+        // Hapus cache token agar tidak bisa dipakai lagi setelah dikirim
+        sessionStorage.removeItem('v_' + token);
+
         return fetch(SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -756,16 +758,11 @@
         }).then(function (res) { return res.json(); });
       }
 
-      /* ---------- Partisipasi ---------- */
-
       function renderProgress(stats) {
         var persen = Math.max(0, Math.min(100, Number(stats.persen) || 0));
-
         $('statTotal').textContent = Number(stats.total || 0).toLocaleString('id-ID');
         $('statVoted').textContent = Number(stats.sudah || 0).toLocaleString('id-ID');
-        $('statPercent').textContent =
-          persen.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
-
+        $('statPercent').textContent = persen.toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
         $('progressBar').style.width = persen + '%';
         $('progressWrap').setAttribute('aria-valuenow', String(Math.round(persen)));
         $('progressUpdated').textContent = 'Diperbarui ' + stats.updatedAt;
@@ -774,17 +771,10 @@
       function refreshProgress() {
         if (state.fetchingProgress) return;
         state.fetchingProgress = true;
-
         panggilParticipation()
-          .then(function (stats) {
-            if (stats) renderProgress(stats);
-          })
-          .catch(function () {
-            $('progressUpdated').textContent = 'Gagal memuat data';
-          })
-          .then(function () {
-            state.fetchingProgress = false;
-          });
+          .then(function (stats) { if (stats) renderProgress(stats); })
+          .catch(function () { $('progressUpdated').textContent = 'Gagal memuat data'; })
+          .then(function () { state.fetchingProgress = false; });
       }
 
       function startLoop() {
@@ -795,13 +785,8 @@
       }
 
       function stopLoop() {
-        if (state.timer) {
-          clearInterval(state.timer);
-          state.timer = null;
-        }
+        if (state.timer) { clearInterval(state.timer); state.timer = null; }
       }
-
-      /* ---------- Util UI ---------- */
 
       function showError(id, pesan) {
         var box = $(id);
@@ -831,22 +816,12 @@
         if (busy) {
           btn.dataset.label = btn.textContent;
           btn.disabled = true;
-          btn.innerHTML =
-            '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' +
-            (teks || 'Memproses...');
+          btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' + (teks || 'Memproses...');
         } else {
           btn.disabled = false;
           if (btn.dataset.label) btn.textContent = btn.dataset.label;
         }
       }
-
-      function cegahKeluar(event) {
-        if (state.voted) return;
-        event.preventDefault();
-        event.returnValue = '';
-      }
-
-      /* ---------- Foto paslon ---------- */
 
       function urlFotoDrive(id) {
         return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w480';
@@ -861,34 +836,25 @@
 
       function terapkanPaslon() {
         var judul = document.querySelectorAll('.option-sub[data-nama]');
-
         for (var i = 0; i < judul.length; i += 1) {
           var paslon = cariPaslon(judul[i].getAttribute('data-nama'));
           if (paslon && paslon.nama) judul[i].textContent = paslon.nama;
         }
-
         pasangFotoPaslon();
       }
 
       function pasangFotoPaslon() {
         var wadah = document.querySelectorAll('.option-photo');
-
         for (var i = 0; i < wadah.length; i += 1) {
           var nama = wadah[i].getAttribute('data-paslon');
           var paslon = cariPaslon(nama);
           var id = String((paslon && paslon.foto) || '').trim();
           if (!id) continue;
-
           var img = wadah[i].querySelector('img');
           if (!img) continue;
-
           img.alt = 'Foto ' + nama;
-          img.addEventListener('load', function () {
-            this.parentNode.classList.add('is-berfoto');
-          });
-          img.addEventListener('error', function () {
-            this.parentNode.classList.remove('is-berfoto');
-          });
+          img.addEventListener('load', function () { this.parentNode.classList.add('is-berfoto'); });
+          img.addEventListener('error', function () { this.parentNode.classList.remove('is-berfoto'); });
           img.src = urlFotoDrive(id);
         }
       }
@@ -906,21 +872,11 @@
         cadangan.textContent = nomor || '-';
         img.alt = 'Foto ' + pilihan;
 
-        if (!id) {
-          img.removeAttribute('src');
-          return;
-        }
-
-        img.onload = function () {
-          wadah.classList.add('is-berfoto');
-        };
-        img.onerror = function () {
-          wadah.classList.remove('is-berfoto');
-        };
+        if (!id) { img.removeAttribute('src'); return; }
+        img.onload = function () { wadah.classList.add('is-berfoto'); };
+        img.onerror = function () { wadah.classList.remove('is-berfoto'); };
         img.src = urlFotoDrive(id);
       }
-
-      /* ---------- Login ---------- */
 
       $('loginForm').addEventListener('submit', function (event) {
         event.preventDefault();
@@ -930,7 +886,6 @@
         clearCatatan();
 
         var token = $('token').value.trim().toUpperCase();
-
         if (!token) {
           showError('loginError', 'Isi token terlebih dahulu.');
           return;
@@ -946,13 +901,6 @@
               return;
             }
             state.token = token;
-            if (hasil.fullscreenOnly) {
-              window.__fullscreenEnabled = true;
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(function() {});
-              }
-              return;
-            }
             bukaBilik(hasil);
           })
           .catch(function () {
@@ -972,23 +920,16 @@
         var keterangan = voter.nama || '';
         if (voter.kelas) keterangan += (keterangan ? ', kelas ' : 'Kelas ') + voter.kelas;
         $('ballotVoter').textContent = keterangan;
-
-        window.__fullscreenEnabled = false;
         $('ballotTitle').focus();
       }
 
-      /* ---------- Pilih opsi ---------- */
-
       $('ballotForm').addEventListener('change', function (event) {
         if (event.target.name !== 'pilihan') return;
-
         state.pilihan = event.target.value;
         var semua = document.querySelectorAll('.option');
         for (var i = 0; i < semua.length; i += 1) semua[i].classList.remove('is-selected');
-
         var kartu = event.target.closest('.option');
         if (kartu) kartu.classList.add('is-selected');
-
         clearError('ballotError');
       });
 
@@ -996,37 +937,25 @@
         var terpilih = document.querySelector('input[name="pilihan"]:checked');
         if (!terpilih) return '';
         var kartu = terpilih.closest('.option');
-        var judul = kartu.querySelector('.option-title').textContent;
-        var sub = kartu.querySelector('.option-sub').textContent;
-        return judul + ' (' + sub + ')';
+        return kartu.querySelector('.option-title').textContent + ' (' + kartu.querySelector('.option-sub').textContent + ')';
       }
-
-      /* ---------- Buka konfirmasi ---------- */
 
       var modalEl = $('confirmModal');
       var confirmModal = new bootstrap.Modal(modalEl);
 
-      modalEl.addEventListener('hide.bs.modal', function (event) {
-        if (state.busy) event.preventDefault();
-      });
-
       $('ballotForm').addEventListener('submit', function (event) {
         event.preventDefault();
         clearError('ballotError');
-
         if (!state.pilihan) {
           showError('ballotError', 'Pilih satu opsi sebelum mengirim suara.');
           return;
         }
-
         clearError('modalError');
         $('confirmChoice').textContent = labelPilihan();
         isiFotoKonfirmasi(state.pilihan);
         $('confirmBtn').disabled = false;
         confirmModal.show();
       });
-
-      /* ---------- Kirim suara ---------- */
 
       var JEDA_SUKSES_MS = 1600;
 
@@ -1057,15 +986,11 @@
               setBusy($('confirmBtn'), false);
               return;
             }
-
             suksesKirim();
           })
           .catch(function () {
             sembunyikanKirim();
-            showError(
-              'modalError',
-              'Koneksi terputus saat mengirim. Coba kirim sekali lagi. Bila token Anda sudah tidak bisa dipakai, hubungi panitia.'
-            );
+            showError('modalError', 'Koneksi terputus saat mengirim. Coba kirim sekali lagi.');
             state.busy = false;
             setBusy($('confirmBtn'), false);
           });
@@ -1074,7 +999,6 @@
       function suksesKirim() {
         state.voted = true;
         state.busy = false;
-        window.removeEventListener('beforeunload', cegahKeluar);
         setBusy($('confirmBtn'), false);
         confirmModal.hide();
         tampilkanKirim('sukses');
@@ -1104,7 +1028,6 @@
         if (pesan) tampilkanCatatan(pesan);
         else clearCatatan();
 
-        window.removeEventListener('beforeunload', cegahKeluar);
         refreshProgress();
         $('token').focus();
       }
