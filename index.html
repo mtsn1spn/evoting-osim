@@ -726,11 +726,26 @@
       }
 
       function panggilVerify(token) {
+        // Cek apakah token ini sudah pernah diverifikasi sukses di browser ini sebelumnya
+        var cacheKey = 'verified_' + token;
+        var cachedResult = sessionStorage.getItem(cacheKey);
+        if (cachedResult) {
+          return Promise.resolve(JSON.parse(cachedResult));
+        }
+
         return fetch(SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'verify', token: token })
-        }).then(function (res) { return res.json(); });
+        }).then(function (res) { 
+          return res.json(); 
+        }).then(function (data) {
+          if (data && data.ok) {
+            // Simpan ke cache lokal agar pengecekan berikutnya instan
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+          }
+          return data;
+        });
       }
 
       function panggilSubmit(token, pilihan) {
