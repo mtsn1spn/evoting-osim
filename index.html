@@ -692,6 +692,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    <script>
     (function () {
       'use strict';
 
@@ -740,8 +741,6 @@
           body: JSON.stringify({ action: 'submit', token: token, pilihan: pilihan })
         }).then(function (res) { return res.json(); });
       }
-      
-      // ... (lanjutan fungsi lainnya tetap sama)
 
       /* ---------- Partisipasi ---------- */
 
@@ -959,28 +958,6 @@
         var keterangan = voter.nama || '';
         if (voter.kelas) keterangan += (keterangan ? ', kelas ' : 'Kelas ') + voter.kelas;
         $('ballotVoter').textContent = keterangan;
-
-        $('fullscreenBtn').addEventListener('click', function() {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().then(function() {
-              window.__fullscreenEnabled = true;
-            }).catch(function(err) {
-              alert('Gagal memasukkan fullscreen: ' + err.message);
-            });
-          } else {
-            if (window.__fullscreenEnabled) {
-              var pw = prompt('Masukkan password admin untuk keluar fullscreen:', '');
-              if (pw !== 'admin123') {
-                alert('Password salah!');
-              } else {
-                document.exitFullscreen();
-                window.__fullscreenEnabled = false;
-              }
-            } else {
-              document.exitFullscreen();
-            }
-          }
-        });
 
         window.__fullscreenEnabled = false;
         $('ballotTitle').focus();
