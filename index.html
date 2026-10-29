@@ -637,19 +637,23 @@
       <div class="panel-head">
         <h2 class="panel-title" id="bilikJudul">Identitas komputer bilik suara</h2>
       </div>
-      <p class="form-text mb-3">Hanya admin yang boleh mengatur halaman ini. Pilih TPS dan bilik komputer ini, lalu masukkan password admin. Pengaturan disimpan di komputer ini dan ikut tercatat pada setiap suara tanpa ditampilkan ke pemilih.</p>
+      <p class="form-text mb-3" id="bilikPetunjuk">Hanya admin yang boleh mengatur halaman ini. Pilih TPS dan bilik komputer ini, lalu masukkan password admin. Pengaturan disimpan di komputer ini dan ikut tercatat pada setiap suara tanpa ditampilkan ke pemilih.</p>
 
-      <fieldset class="pilih-group">
-        <legend class="pilih-label">TPS</legend>
-        <div class="pilih-opsi" id="tpsOpsi" role="group" aria-label="Pilih TPS"></div>
-      </fieldset>
+      <p class="form-text mb-3 d-none" id="bilikTercatat"></p>
 
-      <fieldset class="pilih-group">
-        <legend class="pilih-label">Bilik</legend>
-        <div class="pilih-opsi" id="bilikOpsi" role="group" aria-label="Pilih bilik"></div>
-      </fieldset>
+      <div id="bilikPilih">
+        <fieldset class="pilih-group">
+          <legend class="pilih-label">TPS</legend>
+          <div class="pilih-opsi" id="tpsOpsi" role="group" aria-label="Pilih TPS"></div>
+        </fieldset>
 
-      <div class="mb-3 mt-3">
+        <fieldset class="pilih-group">
+          <legend class="pilih-label">Bilik</legend>
+          <div class="pilih-opsi" id="bilikOpsi" role="group" aria-label="Pilih bilik"></div>
+        </fieldset>
+      </div>
+
+      <div class="mb-3 mt-3" id="bilikSandiWadah">
         <label for="bilikSandi" class="form-label">Password admin</label>
         <input type="password" class="form-control" id="bilikSandi" autocomplete="off"
                spellcheck="false" placeholder="Password yang sama dengan dashboard">
@@ -659,6 +663,7 @@
       <div class="alert alert-danger d-none" id="bilikError" role="alert" aria-live="assertive"></div>
 
       <button type="button" class="btn btn-primary btn-lg w-100 mt-3" id="bilikSimpanBtn" disabled>Simpan identitas bilik</button>
+      <button type="button" class="btn btn-outline-secondary w-100 mt-2 d-none" id="bilikBatalBtn">Batal</button>
     </section>
 
     <!-- Kartu partisipasi: angka diambil dari getParticipation() tiap 15 detik -->
@@ -840,6 +845,8 @@
       };
 
       var pilihanSementara = { tps: 0, bilik: '' };
+      var modeBilik = 'isi'; // 'isi' = belum ada identitas, 'kunci' = tunggu password, 'ubah' = password diterima
+      var sandiTerverifikasi = '';
 
       function $(id) { return document.getElementById(id); }
 
@@ -909,12 +916,35 @@
           }
         }
 
+        if (modeBilik === 'kunci') return;
         $('bilikSimpanBtn').disabled = !(pilihanSementara.tps && pilihanSementara.bilik);
       }
 
-      function tampilkanPanelBilik() {
+      function aturModeBilik(mode) {
+        modeBilik = mode;
+
+        $('bilikPilih').classList.toggle('d-none', mode === 'kunci');
+        $('bilikSandiWadah').classList.toggle('d-none', mode === 'ubah');
+        $('bilikTercatat').classList.toggle('d-none', mode === 'isi');
+        $('bilikBatalBtn').classList.toggle('d-none', mode === 'isi');
+
+        if (mode !== 'isi') $('bilikTercatat').textContent = 'Komputer ini tercatat sebagai ' + labelBilik(state.bilik) + '.';
+
+        $('bilikPetunjuk').textContent = mode === 'kunci'
+          ? 'Identitas bilik komputer ini sudah terkunci. Masukkan password admin untuk mengubahnya.'
+          : mode === 'ubah'
+            ? 'Password diterima. Pilih TPS dan bilik yang baru, lalu simpan.'
+            : 'Hanya admin yang boleh mengatur halaman ini. Pilih TPS dan bilik komputer ini, lalu masukkan password admin. Pengaturan disimpan di komputer ini dan ikut tercatat pada setiap suara tanpa ditampilkan ke pemilih.';
+
+        $('bilikSimpanBtn').textContent = mode === 'kunci' ? 'Buka pengaturan bilik' : 'Simpan identitas bilik';
+        $('bilikSimpanBtn').disabled = mode === 'kunci' ? false : !(pilihanSementara.tps && pilihanSementara.bilik);
+      }
+
+      function tampilkanPanelBilik(mode) {
         pilihanSementara.tps = state.bilik ? state.bilik.tps : 0;
         pilihanSementara.bilik = state.bilik ? state.bilik.bilik : '';
+        sandiTerverifikasi = '';
+        aturModeBilik(mode || (state.bilik ? 'kunci' : 'isi'));
         tandaiSeleksi();
         clearError('bilikError');
         $('bilikSandi').value = '';
@@ -923,16 +953,60 @@
         $('loginPanel').classList.add('d-none');
         $('partisipasiPanel').classList.add('d-none');
         stopLoop();
-        $('bilikSandi').focus();
+
+        if (modeBilik === 'ubah') $('tpsOpsi').querySelector('.pilih-tombol').focus();
+        else $('bilikSandi').focus();
       }
 
       function bukaLogin() {
+        sandiTerverifikasi = '';
+        $('bilikSandi').value = '';
         $('bilikPanel').classList.add('d-none');
         $('loginPanel').classList.remove('d-none');
         $('partisipasiPanel').classList.remove('d-none');
         refreshProgress();
         startLoop();
         $('token').focus();
+      }
+
+      // Membuka panel yang terkunci: password diuji dengan mengulang identitas yang sama,
+      // sehingga server membalas tiket baru hanya kalau sandinya benar.
+      function bukaPengaturanBilik(sandi) {
+        state.busy = true;
+        setBusy($('bilikSimpanBtn'), true, 'Memeriksa...');
+
+        panggilSetBilik(state.bilik.tps, state.bilik.bilik, sandi)
+          .then(function (hasil) {
+            if (!hasil || !hasil.ok || !hasil.tiket) {
+              showError('bilikError', (hasil && hasil.message) || 'Server menolak pengaturan ini.');
+              $('bilikSandi').select();
+              return;
+            }
+
+            state.bilik = {
+              tps: state.bilik.tps,
+              bilik: state.bilik.bilik,
+              tiket: hasil.tiket,
+              kedaluwarsa: hasil.kedaluwarsa
+            };
+            try {
+              window.localStorage.setItem(BILIK_KUNCI, JSON.stringify(state.bilik));
+            } catch (error) {}
+
+            perbaruiBadge();
+            sandiTerverifikasi = sandi;
+            $('bilikSandi').value = '';
+            aturModeBilik('ubah');
+            $('tpsOpsi').querySelector('.pilih-tombol').focus();
+          })
+          .catch(function () {
+            showError('bilikError', 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.');
+          })
+          .then(function () {
+            state.busy = false;
+            setBusy($('bilikSimpanBtn'), false);
+            aturModeBilik(modeBilik); // setBusy mengembalikan label lama, jadi mode dipasang ulang
+          });
       }
 
       // Unduh daftar token valid sekali di background saat halaman dimuat
@@ -1291,12 +1365,25 @@
       $('bilikSimpanBtn').addEventListener('click', function () {
         if (state.busy) return;
 
+        if (modeBilik === 'kunci') {
+          var kunci = $('bilikSandi').value;
+          if (!kunci) {
+            showError('bilikError', 'Masukkan password admin terlebih dahulu.');
+            $('bilikSandi').focus();
+            return;
+          }
+          clearError('bilikError');
+          bukaPengaturanBilik(kunci);
+          return;
+        }
+
         if (!pilihanSementara.tps || !pilihanSementara.bilik) {
           showError('bilikError', 'Pilih TPS dan bilik terlebih dahulu.');
           return;
         }
 
-        var sandi = $('bilikSandi').value;
+        // Pada mode 'ubah' password sudah terbukti saat membuka, jadi tidak diminta dua kali.
+        var sandi = modeBilik === 'ubah' ? sandiTerverifikasi : $('bilikSandi').value;
         if (!sandi) {
           showError('bilikError', 'Masukkan password admin terlebih dahulu.');
           $('bilikSandi').focus();
@@ -1315,7 +1402,14 @@
                 pesan = 'Web App masih versi lama. Publikasikan ulang Kode.gs yang baru, lalu coba lagi.';
               }
               showError('bilikError', pesan);
-              $('bilikSandi').select();
+
+              if (modeBilik === 'ubah') {
+                sandiTerverifikasi = '';
+                aturModeBilik('kunci');
+                $('bilikSandi').focus();
+              } else {
+                $('bilikSandi').select();
+              }
               return;
             }
 
@@ -1340,7 +1434,13 @@
           .then(function () {
             state.busy = false;
             setBusy($('bilikSimpanBtn'), false);
+            aturModeBilik(modeBilik); // setBusy mengembalikan label lama, jadi mode dipasang ulang
           });
+      });
+
+      $('bilikBatalBtn').addEventListener('click', function () {
+        if (state.busy) return;
+        bukaLogin();
       });
 
       $('bilikSandi').addEventListener('keydown', function (event) {
