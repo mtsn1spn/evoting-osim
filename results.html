@@ -388,6 +388,26 @@
       text-align: center;
     }
 
+    .bilik-subtotal {
+      background: #f5f8fa;
+      font-weight: 600;
+    }
+
+    .bilik-kosong td {
+      color: var(--muted);
+    }
+
+    .bilik-tanpa-label {
+      color: #9a5b16;
+      font-weight: 600;
+    }
+
+    .tabel-bilik th:last-child,
+    .tabel-bilik td:last-child {
+      padding-left: 16px;
+      white-space: nowrap;
+    }
+
     .legenda-catatan {
       font-size: 14px;
       color: var(--muted);
@@ -719,6 +739,16 @@
       margin: 14px 0 0;
     }
 
+    .musik-tertutup {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 2px;
+      height: 2px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     .reveal:fullscreen {
       width: 100%;
       height: 100%;
@@ -896,6 +926,28 @@
         </section>
       </div>
 
+      <section class="panel mt-3" aria-labelledby="bilikJudul">
+        <h2 class="panel-title" id="bilikJudul">Suara per TPS dan bilik</h2>
+        <p class="panel-sub" id="bilikSub">Cek apakah semua komputer bilik sudah mengirim suara.</p>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0 tabel-bilik">
+            <thead>
+              <tr>
+                <th scope="col">TPS</th>
+                <th scope="col">Bilik</th>
+                <th scope="col" class="text-end">Paslon 1</th>
+                <th scope="col" class="text-end">Paslon 2</th>
+                <th scope="col" class="text-end">Paslon 3</th>
+                <th scope="col" class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody id="bilikTbody">
+              <tr><td colspan="6" class="text-muted">Memuat data bilik...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       <p class="foot">Sumber: sheet KotakSuara dan DPT. Halaman ini untuk panitia.</p>
     </div>
   </main>
@@ -947,6 +999,7 @@
           <button type="button" class="btn btn-outline-light" id="revealNext" aria-label="Paslon berikutnya">Berikutnya</button>
           <button type="button" class="btn btn-outline-light btn-ruang" id="revealFs" aria-pressed="false">Layar penuh</button>
           <button type="button" class="btn btn-outline-light" id="revealSound" aria-pressed="true">Suara: aktif</button>
+          <button type="button" class="btn btn-outline-light" id="revealMusik" aria-pressed="false">Musik: mati</button>
           <button type="button" class="btn btn-outline-light" id="revealSkip">Lewati</button>
           <button type="button" class="btn btn-outline-light" id="revealClose">Tutup</button>
         </div>
@@ -955,6 +1008,12 @@
       <p class="reveal-fs-hint d-none" id="revealFsHint">
         Layar penuh tidak bisa diaktifkan otomatis oleh browser ini. Tekan F11 (Windows) atau Ctrl+Cmd+F (Mac).
       </p>
+
+      <p class="reveal-fs-hint d-none" id="musikHint">
+        Musik gagal diputar. Pastikan nama file sama persis dengan yang ditulis di MUSIK_BERKAS (termasuk huruf besar/kecil).
+      </p>
+
+      <audio class="musik-tertutup" id="musikBerkas" preload="none" loop></audio>
     </div>
   </div>
 
@@ -972,6 +1031,8 @@
       var LABEL = ['Paslon 1', 'Paslon 2', 'Paslon 3', 'Tidak memilih'];
       var GARIS = '#e8edf1';
       var TEKS = '#516173';
+      var KOLOM_BILIK = ['paslon1', 'paslon2', 'paslon3', 'total'];
+      var LABEL_TANPA_BILIK = 'Belum terlabel';
 
       var state = { token: '', memuat: false, timer: null, masuk: false, loginBusy: false, statsTerakhir: null, suaraAktif: true };
       var pieChart = null;
@@ -1271,6 +1332,99 @@
 
         $('updatedAt').textContent = 'Diperbarui ' + stats.updatedAt;
         $('liveDot').classList.remove('is-error');
+
+        renderBilik(stats);
+      }
+
+      /* ---------- Suara per TPS dan bilik ---------- */
+
+      function tambahBarisBilik(induk, labelTps, labelBilikSLOT, nilai, kelas) {
+        var baris = document.createElement('tr');
+        if (kelas) baris.className = kelas;
+
+        var selTps = document.createElement('td');
+        selTps.textContent = labelTps;
+        var selBilik = document.createElement('td');
+        selBilik.textContent = labelBilikSLOT;
+        baris.appendChild(selTps);
+        baris.appendChild(selBilik);
+
+        KOLOM_BILIK.forEach(function (kolom) {
+          var sel = document.createElement('td');
+          sel.className = 'text-end';
+          sel.textContent = angka(Number(nilai[kolom] || 0));
+          baris.appendChild(sel);
+        });
+
+        induk.appendChild(baris);
+      }
+
+      function renderBilik(stats) {
+        var induk = $('bilikTbody');
+        var daftar = stats.perBilik;
+        var tanpaLabel = Number(stats.suaraTanpaBilik || 0);
+
+        if (!daftar || !daftar.length) {
+          induk.innerHTML = '';
+          var sel = document.createElement('td');
+          sel.colSpan = KOLOM_BILIK.length + 2;
+          sel.className = 'text-muted';
+          sel.textContent = 'Rincian bilik belum tersedia. Perbarui Kode.gs, lalu jalankan setup() sekali.';
+          var kosong = document.createElement('tr');
+          kosong.appendChild(sel);
+          induk.appendChild(kosong);
+          $('bilikSub').textContent = 'Server belum mengirim rincian per bilik.';
+          return;
+        }
+
+        induk.innerHTML = '';
+
+        var labelSubtotal = '';
+        var subtotal = null;
+        var aktif = 0;
+
+        function setorSubtotal() {
+          if (!labelSubtotal) return;
+          tambahBarisBilik(induk, labelSubtotal, 'Jumlah', subtotal, 'bilik-subtotal');
+          labelSubtotal = '';
+          subtotal = null;
+        }
+
+        daftar.forEach(function (bagian) {
+          if (bagian.tps !== labelSubtotal) {
+            setorSubtotal();
+            labelSubtotal = bagian.tps;
+            subtotal = { paslon1: 0, paslon2: 0, paslon3: 0, total: 0 };
+          }
+
+          KOLOM_BILIK.forEach(function (kolom) {
+            subtotal[kolom] += Number(bagian[kolom] || 0);
+          });
+          if (Number(bagian.total || 0) > 0) aktif += 1;
+
+          tambahBarisBilik(
+            induk,
+            bagian.tps,
+            'Bilik ' + bagian.bilik,
+            bagian,
+            Number(bagian.total || 0) > 0 ? '' : 'bilik-kosong'
+          );
+        });
+        setorSubtotal();
+
+        if (tanpaLabel > 0) {
+          tambahBarisBilik(
+            induk,
+            LABEL_TANPA_BILIK,
+            '-',
+            { paslon1: 0, paslon2: 0, paslon3: 0, total: tanpaLabel },
+            'bilik-tanpa-label'
+          );
+        }
+
+        $('bilikSub').textContent =
+          aktif + ' dari ' + daftar.length + ' komputer bilik sudah mengirim suara' +
+          (tanpaLabel > 0 ? ' · ' + tanpaLabel + ' suara belum terlabel bilik' : '.');
       }
 
       function gagalMuat() {
@@ -1391,6 +1545,8 @@
       var COUNTDOWN_DETIK = 10;
       var DURASI_PERSEN_MS = 10000; 
       var TAHAN_PERSEN_MS = 3000;
+      var MUSIK_BERKAS = 'https://mtsn1spn.github.io/evoting-osim/Championship.mp3';
+      var MUSIK_VOLUME = 0.9;
 
       var kurangiGerak = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -1503,6 +1659,64 @@
         var ctx = pastikanAudio();
         if (!ctx) return;
         nada(ctx, 440, 0.06, 0.1, 'square');
+      }
+
+      /* ---------- Musik pengumuman (file audio di GitHub Pages) ---------- */
+
+      var musik = { jalan: false, gagal: false };
+
+      function elemenMusik() {
+        var el = document.getElementById('musikBerkas');
+        if (el && !el.getAttribute('src') && MUSIK_BERKAS) el.setAttribute('src', MUSIK_BERKAS);
+        return el;
+      }
+
+      function putarMusik() {
+        if (musik.gagal || !MUSIK_BERKAS) return;
+
+        var el = elemenMusik();
+        if (!el) return;
+
+        el.volume = MUSIK_VOLUME;
+
+        var jalan = el.play();
+        if (jalan && jalan.then) {
+          jalan.then(function () {
+            musik.jalan = true;
+            perbaruiTombolMusik();
+          }).catch(function () {
+            musik.jalan = false;
+            perbaruiTombolMusik();
+          });
+        }
+      }
+
+      function hentikanMusik() {
+        var el = elemenMusik();
+        if (el) {
+          try {
+            el.pause();
+            el.currentTime = 0;
+          } catch (error) {}
+        }
+        musik.jalan = false;
+        perbaruiTombolMusik();
+      }
+
+      function tandaiMusikGagal() {
+        musik.gagal = true;
+        musik.jalan = false;
+        $('musikHint').classList.remove('d-none');
+        perbaruiTombolMusik();
+      }
+
+      function perbaruiTombolMusik() {
+        var tombol = $('revealMusik');
+        if (!tombol) return;
+
+        tombol.textContent = musik.jalan ? 'Musik: nyala' : 'Musik: mati';
+        tombol.setAttribute('aria-pressed', musik.jalan ? 'true' : 'false');
+        tombol.disabled = musik.gagal || !MUSIK_BERKAS;
       }
 
       function perbaruiTombolSuara() {
@@ -1827,6 +2041,7 @@
       function jalankanPaslon(index) {
         if (!reveal.aktif) return;
 
+        hentikanMusik();
         var data = reveal.hasil[index];
         reveal.giliran = index;
 
@@ -1896,6 +2111,7 @@
         reveal.jeda = false;
         perbaruiTombolJeda();
         bunyiRingkasan();
+        if (state.suaraAktif) putarMusik();
         tampilkanTahap('final');
         $('revealStep').textContent = 'Hasil akhir';
 
@@ -2032,8 +2248,10 @@
         batalJadwal();
         reveal.jeda = false;
         perbaruiTombolJeda();
+        hentikanMusik();
         keluarLayarPenuh();
         $('revealFsHint').classList.add('d-none');
+        $('musikHint').classList.add('d-none');
 
         $('reveal').classList.add('d-none');
         $('reveal').setAttribute('aria-hidden', 'true');
@@ -2068,8 +2286,19 @@
         if (state.suaraAktif) {
           pastikanAudio();
           bunyiKlik();
+        } else {
+          hentikanMusik();
         }
       });
+
+      $('revealMusik').addEventListener('click', function () {
+        if (musik.jalan) hentikanMusik();
+        else putarMusik();
+        bunyiKlik();
+      });
+
+      $('musikBerkas').addEventListener('error', tandaiMusikGagal);
+      perbaruiTombolMusik();
 
       ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (nama) {
         document.addEventListener(nama, perbaruiTombolLayarPenuh);
