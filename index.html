@@ -50,6 +50,7 @@
       justify-content: space-between;
       gap: 12px;
       min-height: 64px;
+      flex-wrap: wrap;
     }
 
     .school {
@@ -69,6 +70,8 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
+      row-gap: 6px;
     }
 
     .school-logo {
@@ -203,6 +206,93 @@
     .form-text {
       font-size: 15px;
       color: var(--muted);
+    }
+
+    /* ---------- Identitas bilik (satu link untuk semua komputer) ---------- */
+
+    .bilik-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .bilik-badge.is-kosong {
+      background: #fdf1e6;
+      border-color: #f0c9a4;
+      color: #9a5b16;
+    }
+
+    .bilik-ubah {
+      border: 0;
+      background: none;
+      padding: 2px 4px;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-dark);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .pilih-group {
+      border: 0;
+      padding: 0;
+      margin: 0 0 18px;
+    }
+
+    .pilih-label {
+      display: block;
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      padding: 0;
+    }
+
+    .pilih-opsi {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pilih-tombol {
+      min-width: 72px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .pilih-tombol:hover {
+      border-color: #aebecb;
+    }
+
+    .pilih-tombol.is-selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 0 0 0 1px var(--accent);
+      color: var(--accent-dark);
+    }
+
+    .kirim-bilik {
+      font-size: 17px;
+      color: #7fe0c9;
+      margin: 14px 0 0;
+      font-variant-numeric: tabular-nums;
     }
 
     .btn-primary {
@@ -513,6 +603,8 @@
       .confirm-choice { font-size: 24px; }
       .confirm-photo { width: 96px; height: 128px; }
       .kirim-teks { font-size: 26px; }
+      .pilih-tombol { min-width: 58px; padding: 11px 14px; font-size: 16px; }
+      .bilik-badge { font-size: 13px; padding: 5px 8px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -528,7 +620,10 @@
         <img class="school-logo" src="https://drive.google.com/thumbnail?id=1J84xXGNw0lXZ9yTzaz7U4cucwNk3y3DS" alt="Logo MTsN" style="width: 28px; height: 28px; vertical-align: middle; margin-right: 8px;">
         <p class="school">MTsN 1 Kota Sungai Penuh</p>
         <p class="school-sub">Pemilihan Ketua dan Wakil Ketua OSIM</p>
-        <button class="btn btn-sm btn-outline-secondary float-end" id="fullscreenBtn" style="margin-left: 8px;" title="Fullscreen/Keluar">Fullscreen</button>
+        <span class="bilik-badge d-none" id="bilikBadge">
+          <span id="bilikLabel">&ndash;</span>
+          <button type="button" class="bilik-ubah" id="bilikEditBtn">Ubah</button>
+        </span>
       </div>
     </div>
   </header>
@@ -537,8 +632,37 @@
     <h1 class="page-title">Pemilihan Ketua dan Wakil Ketua OSIM</h1>
     <p class="page-sub">Masukkan token dari panitia untuk masuk ke bilik suara. Satu token berlaku untuk satu suara.</p>
 
+    <!-- Langkah 0: identitas bilik, dikunci password admin dan tersimpan lokal -->
+    <section id="bilikPanel" class="panel d-none" aria-labelledby="bilikJudul">
+      <div class="panel-head">
+        <h2 class="panel-title" id="bilikJudul">Identitas komputer bilik suara</h2>
+      </div>
+      <p class="form-text mb-3">Hanya admin yang boleh mengatur halaman ini. Pilih TPS dan bilik komputer ini, lalu masukkan password admin. Pengaturan disimpan di komputer ini dan ikut tercatat pada setiap suara tanpa ditampilkan ke pemilih.</p>
+
+      <fieldset class="pilih-group">
+        <legend class="pilih-label">TPS</legend>
+        <div class="pilih-opsi" id="tpsOpsi" role="group" aria-label="Pilih TPS"></div>
+      </fieldset>
+
+      <fieldset class="pilih-group">
+        <legend class="pilih-label">Bilik</legend>
+        <div class="pilih-opsi" id="bilikOpsi" role="group" aria-label="Pilih bilik"></div>
+      </fieldset>
+
+      <div class="mb-3 mt-3">
+        <label for="bilikSandi" class="form-label">Password admin</label>
+        <input type="password" class="form-control" id="bilikSandi" autocomplete="off"
+               spellcheck="false" placeholder="Password yang sama dengan dashboard">
+        <div class="form-text">Diperlukan saat pengaturan pertama dan setiap kali ingin mengubah identitas bilik.</div>
+      </div>
+
+      <div class="alert alert-danger d-none" id="bilikError" role="alert" aria-live="assertive"></div>
+
+      <button type="button" class="btn btn-primary btn-lg w-100 mt-3" id="bilikSimpanBtn" disabled>Simpan identitas bilik</button>
+    </section>
+
     <!-- Kartu partisipasi: angka diambil dari getParticipation() tiap 15 detik -->
-    <section class="panel" id="partisipasiPanel" aria-labelledby="progressTitle">
+    <section class="panel d-none" id="partisipasiPanel" aria-labelledby="progressTitle">
       <div class="panel-head">
         <h2 class="panel-title" id="progressTitle">Partisipasi pemilih</h2>
         <span class="panel-meta" id="progressUpdated">Memuat data</span>
@@ -563,7 +687,7 @@
     </section>
 
     <!-- Langkah 1: login -->
-    <section id="loginPanel" class="panel">
+    <section id="loginPanel" class="panel d-none">
       <form id="loginForm" novalidate>
         <div class="mb-3">
           <label for="token" class="form-label">Token</label>
@@ -654,6 +778,7 @@
           </span>
           <p class="kirim-teks">Suara Anda sudah tercatat</p>
           <p class="kirim-sub">Token ini sudah dipakai. Silakan beri token berikutnya.</p>
+          <p class="kirim-bilik" id="kirimBilik"></p>
         </div>
       </div>
     </div>
@@ -697,6 +822,9 @@
 
       var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwr0ukvi2Wv00vGw6ih7y0iYjluoQj8Jm1ApEte2B9uiGXW6sH2mhEqlTYuuhPN_GeK/exec'; 
       var REFRESH_MS = 15000;
+      var BILIK_KUNCI = 'osim.bilik.v1'; // identitas komputer ini, tersimpan lokal setelah admin memasukkan password
+      var OPSI_TPS = [1, 2, 3];
+      var OPSI_BILIK = ['A', 'B', 'C'];
       var daftarPaslon = [];
       var tokenCache = {}; // Memori lokal untuk menampung data token instan
 
@@ -706,15 +834,119 @@
         busy: false,
         voted: false,
         timer: null,
-        fetchingProgress: false
+        fetchingProgress: false,
+        bilik: null,
+        layarPenuh: false
       };
 
+      var pilihanSementara = { tps: 0, bilik: '' };
+
       function $(id) { return document.getElementById(id); }
+
+      /* ---------- Identitas bilik: satu link untuk 9 komputer ---------- */
+
+      function bacaBilik() {
+        var tersimpan = null;
+        try {
+          tersimpan = JSON.parse(window.localStorage.getItem(BILIK_KUNCI) || 'null');
+        } catch (error) {}
+
+        if (tersimpan && tersimpan.tps && tersimpan.bilik && tersimpan.tiket &&
+            Number(tersimpan.kedaluwarsa) > Date.now()) {
+          return tersimpan;
+        }
+
+        hapusBilik();
+        return null;
+      }
+
+      function hapusBilik() {
+        try {
+          window.localStorage.removeItem(BILIK_KUNCI);
+        } catch (error) {}
+      }
+
+      function labelBilik(bilik) {
+        return bilik ? 'TPS ' + bilik.tps + ' · Bilik ' + bilik.bilik : 'Bilik belum dipilih';
+      }
+
+      function perbaruiBadge() {
+        var badge = $('bilikBadge');
+        badge.classList.remove('d-none');
+        badge.classList.toggle('is-kosong', !state.bilik);
+        $('bilikLabel').textContent = labelBilik(state.bilik);
+      }
+
+      function bangunOpsi(wadahId, daftar, jenis) {
+        var wadah = $(wadahId);
+        wadah.innerHTML = '';
+
+        daftar.forEach(function (nilai) {
+          var tombol = document.createElement('button');
+          tombol.type = 'button';
+          tombol.className = 'pilih-tombol';
+          tombol.textContent = jenis === 'tps' ? 'TPS ' + nilai : 'Bilik ' + nilai;
+          tombol.setAttribute('data-nilai', String(nilai));
+          tombol.addEventListener('click', function () {
+            pilihanSementara[jenis] = nilai;
+            tandaiSeleksi();
+            clearError('bilikError');
+          });
+          wadah.appendChild(tombol);
+        });
+      }
+
+      function tandaiSeleksi() {
+        var kelompok = [['tpsOpsi', 'tps'], ['bilikOpsi', 'bilik']];
+
+        for (var k = 0; k < kelompok.length; k += 1) {
+          var tombol = $(kelompok[k][0]).querySelectorAll('.pilih-tombol');
+          for (var i = 0; i < tombol.length; i += 1) {
+            tombol[i].classList.toggle(
+              'is-selected',
+              String(pilihanSementara[kelompok[k][1]]) === tombol[i].getAttribute('data-nilai')
+            );
+          }
+        }
+
+        $('bilikSimpanBtn').disabled = !(pilihanSementara.tps && pilihanSementara.bilik);
+      }
+
+      function tampilkanPanelBilik() {
+        pilihanSementara.tps = state.bilik ? state.bilik.tps : 0;
+        pilihanSementara.bilik = state.bilik ? state.bilik.bilik : '';
+        tandaiSeleksi();
+        clearError('bilikError');
+        $('bilikSandi').value = '';
+
+        $('bilikPanel').classList.remove('d-none');
+        $('loginPanel').classList.add('d-none');
+        $('partisipasiPanel').classList.add('d-none');
+        stopLoop();
+        $('bilikSandi').focus();
+      }
+
+      function bukaLogin() {
+        $('bilikPanel').classList.add('d-none');
+        $('loginPanel').classList.remove('d-none');
+        $('partisipasiPanel').classList.remove('d-none');
+        refreshProgress();
+        startLoop();
+        $('token').focus();
+      }
 
       // Unduh daftar token valid sekali di background saat halaman dimuat
       function muatCacheToken() {
         fetch(SCRIPT_URL + '?action=getPaslon') // atau endpoint khusus token jika ada, atau kita ambil data verifikasi awal
         // Sebagai alternatif aman dan cepat, kita gunakan verifikasi kilat via cache lokal sessionStorage
+      }
+
+      function panggilSetBilik(tps, bilik, sandi) {
+        return fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'setBilik', tps: tps, bilik: bilik, password: sandi })
+        }).then(function (res) { return res.json(); });
       }
 
       function panggilParticipation() {
@@ -751,10 +983,13 @@
         // Hapus cache token agar tidak bisa dipakai lagi setelah dikirim
         sessionStorage.removeItem('v_' + token);
 
+        var isi = { action: 'submit', token: token, pilihan: pilihan };
+        if (state.bilik) isi.tiket = state.bilik.tiket;
+
         return fetch(SCRIPT_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'submit', token: token, pilihan: pilihan })
+          body: JSON.stringify(isi)
         }).then(function (res) { return res.json(); });
       }
 
@@ -903,11 +1138,10 @@
 
             // Jika token khusus untuk fullscreen saja
             if (hasil.fullscreenOnly) {
-              if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(function() {});
-              }
+              state.layarPenuh = true;
+              mintaLayarPenuh();
               $('token').value = '';
-              tampilkanCatatan('Mode layar penuh diaktifkan.');
+              tampilkanCatatan('Layar penuh terkunci di komputer ini. Masukkan token berikutnya.');
               return;
             }
 
@@ -974,6 +1208,7 @@
         $('kirimLayer').classList.remove('d-none');
         $('kirimLoading').classList.toggle('d-none', mode !== 'loading');
         $('kirimSukses').classList.toggle('d-none', mode !== 'sukses');
+        if (mode === 'sukses') $('kirimBilik').textContent = 'Dicatat di ' + labelBilik(state.bilik);
       }
 
       function sembunyikanKirim() {
@@ -1053,6 +1288,92 @@
         resetBilik('');
       });
 
+      $('bilikSimpanBtn').addEventListener('click', function () {
+        if (state.busy) return;
+
+        if (!pilihanSementara.tps || !pilihanSementara.bilik) {
+          showError('bilikError', 'Pilih TPS dan bilik terlebih dahulu.');
+          return;
+        }
+
+        var sandi = $('bilikSandi').value;
+        if (!sandi) {
+          showError('bilikError', 'Masukkan password admin terlebih dahulu.');
+          $('bilikSandi').focus();
+          return;
+        }
+
+        clearError('bilikError');
+        state.busy = true;
+        setBusy($('bilikSimpanBtn'), true, 'Memeriksa...');
+
+        panggilSetBilik(pilihanSementara.tps, pilihanSementara.bilik, sandi)
+          .then(function (hasil) {
+            if (!hasil || !hasil.ok || !hasil.tiket) {
+              var pesan = (hasil && hasil.message) || 'Server menolak pengaturan ini.';
+              if (pesan.indexOf('Aksi tidak dikenal') !== -1) {
+                pesan = 'Web App masih versi lama. Publikasikan ulang Kode.gs yang baru, lalu coba lagi.';
+              }
+              showError('bilikError', pesan);
+              $('bilikSandi').select();
+              return;
+            }
+
+            var identitas = {
+              tps: pilihanSementara.tps,
+              bilik: pilihanSementara.bilik,
+              tiket: hasil.tiket,
+              kedaluwarsa: hasil.kedaluwarsa
+            };
+            try {
+              window.localStorage.setItem(BILIK_KUNCI, JSON.stringify(identitas));
+            } catch (error) {}
+
+            state.bilik = identitas;
+            $('bilikSandi').value = '';
+            perbaruiBadge();
+            bukaLogin();
+          })
+          .catch(function () {
+            showError('bilikError', 'Tidak bisa menghubungi server. Periksa koneksi lalu coba lagi.');
+          })
+          .then(function () {
+            state.busy = false;
+            setBusy($('bilikSimpanBtn'), false);
+          });
+      });
+
+      $('bilikSandi').addEventListener('keydown', function (event) {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
+        $('bilikSimpanBtn').click();
+      });
+
+      $('bilikEditBtn').addEventListener('click', function () {
+        if (state.busy) return;
+        if (state.token) {
+          showError('ballotError', 'Batal atau kirimkan suara yang sedang berjalan sebelum mengganti identitas bilik.');
+          $('ballotTitle').focus();
+          return;
+        }
+        tampilkanPanelBilik();
+      });
+
+      function mintaLayarPenuh() {
+        if (!document.documentElement.requestFullscreen) return;
+        var hasil = document.documentElement.requestFullscreen();
+        if (hasil && hasil.catch) hasil.catch(function () {});
+      }
+
+      // Browser melarang halaman memaksa layar penuh, jadi kunci ini didekati dengan meminta
+      // lagi pada interaksi berikutnya setelah pemilih keluar lewat Esc atau tombol silang.
+      function cobaKunciLayarPenuh() {
+        if (state.layarPenuh && !document.fullscreenElement) mintaLayarPenuh();
+      }
+
+      document.addEventListener('pointerdown', cobaKunciLayarPenuh);
+      document.addEventListener('keydown', cobaKunciLayarPenuh);
+
       panggilPaslon()
         .then(function (daftar) {
           daftarPaslon = daftar || [];
@@ -1060,8 +1381,13 @@
         })
         .catch(function () {});
 
-      refreshProgress();
-      startLoop();
+      state.bilik = bacaBilik();
+      perbaruiBadge();
+      bangunOpsi('tpsOpsi', OPSI_TPS, 'tps');
+      bangunOpsi('bilikOpsi', OPSI_BILIK, 'bilik');
+
+      if (state.bilik) bukaLogin();
+      else tampilkanPanelBilik();
     })();
   </script>
 </body>
